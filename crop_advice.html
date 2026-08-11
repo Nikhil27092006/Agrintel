@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KisanMitra - Crop Recommendation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .voice-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #00450d;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c0c9bb;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#90d689",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#2a1800",
+                        "surface-variant": "#e9e2d2",
+                        "secondary-fixed": "#ffddb5",
+                        "surface-container-high": "#eee8d7",
+                        "on-tertiary-fixed": "#2c160e",
+                        "surface": "#fff9ec",
+                        "tertiary": "#50342c",
+                        "inverse-on-surface": "#f7f0df",
+                        "on-error": "#ffffff",
+                        "primary-container": "#1b5e20",
+                        "surface-container-low": "#faf3e2",
+                        "on-background": "#1e1c12",
+                        "surface-container": "#f4eddd",
+                        "on-surface": "#1e1c12",
+                        "outline-variant": "#c0c9bb",
+                        "tertiary-fixed-dim": "#e7bdb1",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#41493e",
+                        "primary-fixed": "#acf4a4",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#002203",
+                        "surface-container-highest": "#e9e2d2",
+                        "background": "#fff9ec",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb957",
+                        "on-secondary-container": "#694300",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "on-tertiary-container": "#e6bcb0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdbd0",
+                        "inverse-surface": "#333025",
+                        "secondary-container": "#fcab28",
+                        "primary-fixed-dim": "#91d78a",
+                        "surface-dim": "#e0dac9",
+                        "on-primary-fixed-variant": "#0c5216",
+                        "surface-tint": "#2a6b2c",
+                        "primary": "#00450d",
+                        "outline": "#717a6d",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fff9ec",
+                        "tertiary-container": "#694b42",
+                        "secondary": "#835400",
+                        "inverse-primary": "#91d78a",
+                        "on-tertiary-fixed-variant": "#5d4037"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "4px",
+                        "touch-target": "56px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Noto Sans"],
+                        "display-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm z-50 flex justify-between items-center h-touch-target px-md w-full">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed">
+<img class="w-full h-full object-cover" data-alt="A warm and dignified portrait of a modern Indian farmer wearing a traditional turban and a light-colored kurta, set against a soft sunset-lit field. The lighting is soft and high-key, conveying wisdom and digital empowerment. The visual style is clean and high-end, using warm earthy tones and deep greens to match a modern tactile aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFLNurrlMYZAf2zNq_0iT_TRtkbxYTSNIUwzTl4ey3xchX2HDaeHCWgSLe5zuZvvFglcPh0fjTdqKD_by8ui2vc2WgkLsyfYQmO3WNkhQM7ok1phpJZgIzDDiUw4-QZU8pyqwpq7-MOElzRxsUtWk0RKIqYr2-OjgotK3ztVTsyDZMqHAxJiZmIYSQeBbzJ7PrgZwb2cISug_PdhzWcmYEvMjyvV7eoK2FeZG9R9vwWcPWlmc-omvT_Q"/>
+</div>
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">KisanMitra</span>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<main class="px-md pt-lg max-w-2xl mx-auto">
+<!-- Encouraging Header -->
+<section class="mb-lg">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-xs">Find Your Next Harvest</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Let's analyze your land to find the most profitable and sustainable crops for you.</p>
+</section>
+<!-- Step 1: Input Form -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border-l-4 border-secondary-container mb-lg transition-all duration-500" id="step-1">
+<div class="flex items-center gap-sm mb-md">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm">Step 1 of 2</span>
+<h2 class="font-headline-sm text-headline-sm">Land & Resources</h2>
+</div>
+<form class="space-y-lg" id="recommendation-form">
+<!-- Land Area -->
+<div>
+<label class="block font-label-lg text-label-lg mb-xs">Total Land Area (Acres)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-b-2 border-tertiary-fixed-dim focus:border-primary px-md h-touch-target rounded-t-lg outline-none font-body-md text-body-md transition-all" placeholder="e.g. 5.5" type="number"/>
+<span class="absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant font-label-sm">Acres</span>
+</div>
+</div>
+<!-- Soil Type -->
+<div>
+<label class="block font-label-lg text-label-lg mb-xs">Soil Type</label>
+<select class="w-full bg-surface-container-low border-b-2 border-tertiary-fixed-dim focus:border-primary px-md h-touch-target rounded-t-lg outline-none font-body-md text-body-md appearance-none">
+<option>Alluvial (River Basin)</option>
+<option>Black (Lava/Cotton)</option>
+<option>Red & Yellow</option>
+<option>Laterite</option>
+</select>
+</div>
+<!-- Irrigation Toggle -->
+<div class="flex items-center justify-between bg-surface-container p-md rounded-lg">
+<div>
+<p class="font-label-lg text-label-lg">Irrigation Available?</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Check if you have tube-well/canal access</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-14 h-7 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Budget Slider -->
+<div>
+<div class="flex justify-between mb-xs">
+<label class="font-label-lg text-label-lg">Investment Budget</label>
+<span class="text-primary font-headline-sm" id="budget-value">₹25,000</span>
+</div>
+<input class="w-full h-2 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="100000" min="5000" oninput="document.getElementById('budget-value').innerText = '₹' + parseInt(this.value).toLocaleString()" step="1000" type="range" value="25000"/>
+<div class="flex justify-between text-label-sm text-on-surface-variant mt-xs">
+<span>₹5k</span>
+<span>₹100k</span>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary text-white h-touch-target rounded-full font-headline-sm flex items-center justify-center gap-sm active:scale-95 transition-transform" onclick="showResults()" type="button">
+<span>Analyze Best Crops</span>
+<span class="material-symbols-outlined">analytics</span>
+</button>
+</form>
+</div>
+<!-- Step 2: Results (Hidden by default) -->
+<div class="hidden transition-all duration-700 opacity-0 transform translate-y-8" id="step-2">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-headline-sm text-headline-sm">Recommended Crops</h2>
+<button class="text-primary font-label-lg flex items-center gap-xs" onclick="resetForm()">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                    Edit Inputs
+                </button>
+</div>
+<div class="space-y-md">
+<!-- Result Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-primary">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="A lush, golden yellow mustard field in full bloom under a bright blue sky. The photo is high-resolution, featuring sharp details of the delicate mustard flowers and green stems. The scene is bright and optimistic, with soft sunlight highlighting the textures. The style is professional nature photography with high-end color grading." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2z-DD03PZm1mXvKvIqhSIjpIhO3ArsK45cZ4nkwNz-neoR8gpcsiWMWKwCzs3X9Svjl5rqARs5UO5oNqa48X2mTWAF2BH5UuTX2qk8xDXXj6npdPnFENWoeknkyO16_0z0XOZluzvYxPih7m_H_UMzP97JXK2Ih3DmqFLuyU6vdnh1I5uT4eu2vr3R-o51RUGbg_Ra9mA_-dUdSbjhQyAH_zYi6LsqvcL0QIqjFRYGkk1Yu46XqXWPQ"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Mustard (Yellow)</h3>
+<span class="bg-primary-fixed text-on-primary-fixed px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Low Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">Estimated 4-month cycle</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹38,500</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                    Details
+                                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Result Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-secondary-container">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="Close-up of healthy, green wheat stalks with ripening grains, swaying in a gentle breeze. The background is a soft-focus vista of a vast agricultural landscape. The lighting is warm morning sun, casting long shadows and creating a tactile, organic feel. Professional agricultural photography style with a focus on growth and abundance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGMuNwg9D_fyY8LkPTqp5DYj09BJCOxWPDs9NYQsmDgpk_2Qe3GVKVxU-dkqn4Ot79z07QCuTJidXRJ1UHJ6RRr2Ip0OwFS5K-jQcJgOUBLKf1kCUx_sEPZsCcK755foSUJNESrEF72sFDAlQjxxJqIxbLGcUeoriWZ5v37pWojxwy_6LN2dnPVeboYLEj6ksr0yHF66PetsbxV0rqNn19EOWJvBxoGC7f9GLfLnKdTPS8KU6384i-Ww"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Wheat (Sharbati)</h3>
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Med Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">High market demand currently</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹42,200</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                    Details
+                                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Result Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-tertiary">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="A detailed macro view of chickpea pods growing on a green bush. The lighting is bright and clear, showcasing the natural textures of the plant and soil. The overall aesthetic is clean and modern, highlighting the sustainability of pulse crops. Shot with a high-end camera lens for shallow depth of field, focusing on a single healthy pod." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI-117VrnSGrxE_O_bi9DQODpljYU9QQAWqTFa4vSHq55RyvxsNX65gjWfpXXzYZonUi0HBaLnnoVOvKMEAqlLqcvoqPToXWG5ZAb-REwnVaKIlvaAGe_Nd-og81_dEA2UjDVSLJpeQEKetJNbA6puvBXkNaIXR5xQ3DVYKkthKPqs7wZ1kSNSkk5bRBlGQQTzH_vovATWtYgZhE4_wYEpaEAViWcwWDrj-rJlo__rBT8G5rvylYe8uw"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Chickpeas</h3>
+<span class="bg-primary-fixed text-on-primary-fixed px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Low Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">Great for soil health rotation</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹29,800</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                    Details
+                                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Insight Callout -->
+<div class="mt-lg p-md bg-surface-container-high rounded-xl flex gap-md items-start">
+<span class="material-symbols-outlined text-secondary-container">tips_and_updates</span>
+<div>
+<p class="font-label-lg text-label-lg text-primary">Pro Tip</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Mustard is recommended as your primary crop because your soil's current nitrogen levels perfectly match its high-yield window.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Voice Action FAB -->
+<div class="fixed bottom-24 right-md z-50">
+<div class="voice-pulse absolute inset-0 bg-secondary-container rounded-full opacity-50"></div>
+<button class="relative w-14 h-14 bg-secondary-container text-on-secondary-container rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 w-full h-[64px] z-50 bg-white dark:bg-surface-container shadow-[0px_-4px_12px_rgba(27,94,32,0.08)] flex justify-around items-center w-full px-md">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<!-- Crops (Active) -->
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim after:content-[''] after:block after:w-1 after:h-1 after:bg-secondary-container after:rounded-full after:mt-1 hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+<span class="font-label-sm text-label-sm">Crops</span>
+</a>
+<!-- Mandi -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-sm text-label-sm">Mandi</span>
+</a>
+<!-- Weather -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">wb_sunny</span>
+<span class="font-label-sm text-label-sm">Weather</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        function showResults() {
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            
+            step1.style.opacity = '0';
+            step1.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                // Trigger reflow
+                step2.offsetHeight;
+                step2.classList.add('opacity-100', 'translate-y-0');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+
+        function resetForm() {
+            const step1 = document.getElementById('step-1');
+            const step2 = document.getElementById('step-2');
+            
+            step2.classList.remove('opacity-100', 'translate-y-0');
+            step2.classList.add('opacity-0', 'translate-y-8');
+            
+            setTimeout(() => {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                step1.offsetHeight;
+                step1.style.opacity = '1';
+                step1.style.transform = 'translateY(0)';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+        }
+    </script>
+</body></html>

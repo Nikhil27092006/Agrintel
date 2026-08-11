@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgrIntel - Crop Recommendation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .voice-pulse {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.1); opacity: 0.4; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* Yoyo Pulse for Analyze Button */
+        @keyframes yoyo-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 69, 13, 0.4); }
+            50% { transform: scale(1.03); box-shadow: 0 0 20px 5px rgba(0, 69, 13, 0.2); }
+        }
+        .animate-yoyo-pulse {
+            animation: yoyo-pulse 2s ease-in-out infinite;
+        }
+
+        /* Floating Yoyo for Avatar */
+        @keyframes yoyo-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .animate-yoyo-float {
+            animation: yoyo-float 3s ease-in-out infinite;
+        }
+
+        /* Slider Thumb Glow/Pulse */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #00450d;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 0 0 rgba(0, 69, 13, 0.3);
+            animation: thumb-glow 2.5s infinite;
+        }
+        @keyframes thumb-glow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 69, 13, 0); }
+            50% { box-shadow: 0 0 12px 6px rgba(0, 69, 13, 0.2); }
+        }
+        input[type="range"]:active::-webkit-slider-thumb {
+            transform: scale(1.2);
+            animation: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c0c9bb;
+            border-radius: 10px;
+        }
+        
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .reveal-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Footer Reveal */
+        .footer-reveal {
+            transform: translateY(100%);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+        .footer-reveal.visible {
+            transform: translateY(0);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .btn-loading .loading-spinner { display: block; }
+        .btn-loading .btn-text { display: none; }
+        .btn-loading .btn-icon { display: none; }
+
+        .toggle-switch { transition: background-color 0.3s ease; }
+        .toggle-dot { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#90d689",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#2a1800",
+                        "surface-variant": "#e9e2d2",
+                        "secondary-fixed": "#ffddb5",
+                        "surface-container-high": "#eee8d7",
+                        "on-tertiary-fixed": "#2c160e",
+                        "surface": "#fff9ec",
+                        "tertiary": "#50342c",
+                        "inverse-on-surface": "#f7f0df",
+                        "on-error": "#ffffff",
+                        "primary-container": "#1b5e20",
+                        "surface-container-low": "#faf3e2",
+                        "on-background": "#1e1c12",
+                        "surface-container": "#f4eddd",
+                        "on-surface": "#1e1c12",
+                        "outline-variant": "#c0c9bb",
+                        "tertiary-fixed-dim": "#e7bdb1",
+                        "on-error-container": "#93000a",
+                        "on-surface-variant": "#41493e",
+                        "primary-fixed": "#acf4a4",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#002203",
+                        "surface-container-highest": "#e9e2d2",
+                        "background": "#fff9ec",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#ffb957",
+                        "on-secondary-container": "#694300",
+                        "on-secondary-fixed-variant": "#643f00",
+                        "on-tertiary-container": "#e6bcb0",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdbd0",
+                        "inverse-surface": "#333025",
+                        "secondary-container": "#fcab28",
+                        "primary-fixed-dim": "#91d78a",
+                        "surface-dim": "#e0dac9",
+                        "on-primary-fixed-variant": "#0c5216",
+                        "surface-tint": "#2a6b2c",
+                        "primary": "#00450d",
+                        "outline": "#717a6d",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fff9ec",
+                        "tertiary-container": "#694b42",
+                        "secondary": "#835400",
+                        "inverse-primary": "#91d78a",
+                        "on-tertiary-fixed-variant": "#5d4037"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "base": "4px",
+                        "touch-target": "56px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Noto Sans"],
+                        "display-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-lg": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                        "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface dark:bg-surface-dim shadow-sm z-50 flex justify-between items-center h-touch-target px-md">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-fixed animate-yoyo-float">
+<img class="w-full h-full object-cover" data-alt="Portrait of farmer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFLNurrlMYZAf2zNq_0iT_TRtkbxYTSNIUwzTl4ey3xchX2HDaeHCWgSLe5zuZvvFglcPh0fjTdqKD_by8ui2vc2WgkLsyfYQmO3WNkhQM7ok1phpJZgIzDDiUw4-QZU8pyqwpq7-MOElzRxsUtWk0RKIqYr2-OjgotK3ztVTsyDZMqHAxJiZmIYSQeBbzJ7PrgZwb2cISug_PdhzWcmYEvMjyvV7eoK2FeZG9R9vwWcPWlmc-omvT_Q"/>
+</div>
+<span class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim">AgrIntel</span>
+</div>
+<button class="text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 p-2 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<main class="px-md pt-lg max-w-2xl mx-auto">
+<!-- Encouraging Header -->
+<section class="mb-lg animate-slide-in">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-xs">Find Your Next Harvest</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Let's analyze your land with AgrIntel to find the most profitable and sustainable crops for you.</p>
+</section>
+<!-- Step 1: Input Form -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-sm border-l-4 border-secondary-container mb-lg transition-all duration-500 animate-slide-in" id="step-1" style="animation-delay: 0.1s;">
+<div class="flex items-center gap-sm mb-md">
+<span class="bg-primary-container text-on-primary-container px-3 py-1 rounded-full text-label-sm font-label-sm">Step 1 of 2</span>
+<h2 class="font-headline-sm text-headline-sm">Land &amp; Resources</h2>
+</div>
+<form class="space-y-lg" id="recommendation-form">
+<!-- Land Area -->
+<div class="reveal-on-scroll" style="transition-delay: 100ms;">
+<label class="block font-label-lg text-label-lg mb-xs">Total Land Area (Acres)</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-b-2 border-tertiary-fixed-dim focus:border-primary px-md h-touch-target rounded-t-lg outline-none font-body-md text-body-md transition-all" placeholder="e.g. 5.5" type="number"/>
+<span class="absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant font-label-sm">Acres</span>
+</div>
+</div>
+<!-- Soil Type -->
+<div class="reveal-on-scroll" style="transition-delay: 200ms;">
+<label class="block font-label-lg text-label-lg mb-xs">Soil Type</label>
+<select class="w-full bg-surface-container-low border-b-2 border-tertiary-fixed-dim focus:border-primary px-md h-touch-target rounded-t-lg outline-none font-body-md text-body-md appearance-none">
+<option>Alluvial (River Basin)</option>
+<option>Black (Lava/Cotton)</option>
+<option>Red &amp; Yellow</option>
+<option>Laterite</option>
+</select>
+</div>
+<!-- Irrigation Toggle -->
+<div class="reveal-on-scroll flex items-center justify-between bg-surface-container p-md rounded-lg" style="transition-delay: 300ms;">
+<div>
+<p class="font-label-lg text-label-lg">Irrigation Available?</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Check if you have tube-well/canal access</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer group">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="toggle-switch w-14 h-7 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:bg-primary"></div>
+<div class="toggle-dot absolute top-0.5 left-[4px] bg-white rounded-full h-6 w-6 peer-checked:translate-x-full peer-checked:shadow-md transition-all duration-300 shadow-sm"></div>
+</label>
+</div>
+<!-- Budget Slider -->
+<div class="reveal-on-scroll" style="transition-delay: 400ms;">
+<div class="flex justify-between mb-xs">
+<label class="font-label-lg text-label-lg">Investment Budget</label>
+<span class="text-primary font-headline-sm transition-all duration-200" id="budget-value">₹25,000</span>
+</div>
+<input class="w-full h-2 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-container" max="100000" min="5000" oninput="document.getElementById('budget-value').innerText = '₹' + parseInt(this.value).toLocaleString()" step="1000" type="range" value="25000"/>
+<div class="flex justify-between text-label-sm text-on-surface-variant mt-xs">
+<span>₹5k</span>
+<span>₹100k</span>
+</div>
+</div>
+<!-- Action Button -->
+<div class="reveal-on-scroll" style="transition-delay: 500ms;">
+<button class="w-full bg-primary text-white h-touch-target rounded-full font-headline-sm flex items-center justify-center gap-sm active:scale-95 transition-all duration-200 animate-yoyo-pulse" id="analyze-btn" onclick="handleAnalyze()" type="button">
+<span class="btn-text">Analyze Best Crops</span>
+<span class="material-symbols-outlined btn-icon">analytics</span>
+<div class="loading-spinner"></div>
+</button>
+</div>
+</form>
+</div>
+<!-- Step 2: Results -->
+<div class="hidden opacity-0 transform translate-y-8" id="step-2">
+<div class="flex items-center justify-between mb-md">
+<h2 class="font-headline-sm text-headline-sm">AgrIntel Recommendations</h2>
+<button class="text-primary font-label-lg flex items-center gap-xs" onclick="resetForm()">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                Edit Inputs
+            </button>
+</div>
+<div class="space-y-md">
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-primary reveal-on-scroll">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="Mustard field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2z-DD03PZm1mXvKvIqhSIjpIhO3ArsK45cZ4nkwNz-neoR8gpcsiWMWKwCzs3X9Svjl5rqARs5UO5oNqa48X2mTWAF2BH5UuTX2qk8xDXXj6npdPnFENWoeknkyO16_0z0XOZluzvYxPih7m_H_UMzP97JXK2Ih3DmqFLuyU6vdnh1I5uT4eu2vr3R-o51RUGbg_Ra9mA_-dUdSbjhQyAH_zYi6LsqvcL0QIqjFRYGkk1Yu46XqXWPQ"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Mustard (Yellow)</h3>
+<span class="bg-primary-fixed text-on-primary-fixed px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Low Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">Estimated 4-month cycle</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹38,500</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                Details
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-secondary-container reveal-on-scroll" style="transition-delay: 100ms;">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="Wheat field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGMuNwg9D_fyY8LkPTqp5DYj09BJCOxWPDs9NYQsmDgpk_2Qe3GVKVxU-dkqn4Ot79z07QCuTJidXRJ1UHJ6RRr2Ip0OwFS5K-jQcJgOUBLKf1kCUx_sEPZsCcK755foSUJNESrEF72sFDAlQjxxJqIxbLGcUeoriWZ5v37pWojxwy_6LN2dnPVeboYLEj6ksr0yHF66PetsbxV0rqNn19EOWJvBxoGC7f9GLfLnKdTPS8KU6384i-Ww"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Wheat (Sharbati)</h3>
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Med Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">High market demand currently</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹42,200</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                Details
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-sm border-l-4 border-tertiary reveal-on-scroll" style="transition-delay: 200ms;">
+<div class="flex h-40">
+<div class="w-1/3 relative">
+<img class="w-full h-full object-cover" data-alt="Chickpeas" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI-117VrnSGrxE_O_bi9DQODpljYU9QQAWqTFa4vSHq55RyvxsNX65gjWfpXXzYZonUi0HBaLnnoVOvKMEAqlLqcvoqPToXWG5ZAb-REwnVaKIlvaAGe_Nd-og81_dEA2UjDVSLJpeQEKetJNbA6puvBXkNaIXR5xQ3DVYKkthKPqs7wZ1kSNSkk5bRBlGQQTzH_vovATWtYgZhE4_wYEpaEAViWcwWDrj-rJlo__rBT8G5rvylYe8uw"/>
+</div>
+<div class="w-2/3 p-md flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start">
+<h3 class="font-headline-sm text-headline-sm">Chickpeas</h3>
+<span class="bg-primary-fixed text-on-primary-fixed px-xs py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Low Risk</span>
+</div>
+<p class="text-on-surface-variant text-label-sm">Great for soil health rotation</p>
+</div>
+<div class="flex items-end justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Expected Profit</p>
+<p class="text-primary font-display-lg-mobile text-display-lg-mobile">₹29,800</p>
+</div>
+<button class="h-10 px-md bg-surface-container-high text-primary rounded-full font-label-lg flex items-center gap-xs hover:bg-primary hover:text-white transition-colors">
+                                Details
+                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-lg p-md bg-surface-container-high rounded-xl flex gap-md items-start reveal-on-scroll">
+<span class="material-symbols-outlined text-secondary-container">tips_and_updates</span>
+<div>
+<p class="font-label-lg text-label-lg text-primary">AgrIntel Insight</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Mustard is recommended because AgrIntel's soil mapping shows your region has optimal moisture for this crop cycle.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Voice Action FAB -->
+<div class="fixed bottom-24 right-md z-50">
+<div class="voice-pulse absolute inset-0 bg-secondary-container rounded-full opacity-50"></div>
+<button class="relative w-14 h-14 bg-secondary-container text-on-secondary-container rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-90">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">mic</span>
+</button>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 w-full h-[64px] z-50 bg-white dark:bg-surface-container shadow-[0px_-4px_12px_rgba(27,94,32,0.08)] flex justify-around items-center px-md footer-reveal" id="footer-nav">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim after:content-[''] after:block after:w-1 after:h-1 after:bg-secondary-container after:rounded-full after:mt-1 hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">agriculture</span>
+<span class="font-label-sm text-label-sm">Crops</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-sm text-label-sm">Mandi</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">wb_sunny</span>
+<span class="font-label-sm text-label-sm">Weather</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline hover:opacity-80 transition-transform active:scale-95" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+    // Scroll Reveal Implementation
+    const observerOptions = {
+        threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+
+    // Footer reveal with simple scroll trigger
+    const footerNav = document.getElementById('footer-nav');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {
+            footerNav.classList.add('visible');
+        } else {
+            footerNav.classList.remove('visible');
+        }
+    }, { passive: true });
+    // Trigger initial check
+    if (window.scrollY > 20) footerNav.classList.add('visible');
+
+    function handleAnalyze() {
+        const btn = document.getElementById('analyze-btn');
+        btn.classList.add('btn-loading');
+        btn.classList.remove('animate-yoyo-pulse'); // Stop pulse during loading
+        btn.disabled = true;
+
+        setTimeout(() => {
+            showResults();
+            btn.classList.remove('btn-loading');
+            btn.disabled = false;
+        }, 1200);
+    }
+
+    function showResults() {
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        
+        step1.style.opacity = '0';
+        step1.style.transform = 'translateY(-20px)';
+        
+        setTimeout(() => {
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+            // Trigger reflow
+            step2.offsetHeight;
+            step2.classList.add('animate-slide-in');
+            step2.classList.add('opacity-100', 'translate-y-0');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Re-init observer for elements in step 2
+            document.querySelectorAll('#step-2 .reveal-on-scroll').forEach(el => observer.observe(el));
+        }, 300);
+    }
+
+    function resetForm() {
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const btn = document.getElementById('analyze-btn');
+        
+        step2.classList.remove('opacity-100', 'translate-y-0', 'animate-slide-in');
+        step2.classList.add('opacity-0', 'translate-y-8');
+        
+        setTimeout(() => {
+            step2.classList.add('hidden');
+            step1.classList.remove('hidden');
+            step1.offsetHeight;
+            step1.style.opacity = '1';
+            step1.style.transform = 'translateY(0)';
+            btn.classList.add('animate-yoyo-pulse'); // Restart pulse
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Restart reveal animations
+            document.querySelectorAll('#step-1 .reveal-on-scroll').forEach(el => {
+                el.classList.remove('visible');
+                observer.observe(el);
+            });
+        }, 300);
+    }
+</script>
+</body></html>

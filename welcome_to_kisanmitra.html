@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KisanMitra - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Shared Component Styling & Logic -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#90d689",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#2a1800",
+                    "surface-variant": "#e9e2d2",
+                    "secondary-fixed": "#ffddb5",
+                    "surface-container-high": "#eee8d7",
+                    "on-tertiary-fixed": "#2c160e",
+                    "surface": "#fff9ec",
+                    "tertiary": "#50342c",
+                    "inverse-on-surface": "#f7f0df",
+                    "on-error": "#ffffff",
+                    "primary-container": "#1b5e20",
+                    "surface-container-low": "#faf3e2",
+                    "on-background": "#1e1c12",
+                    "surface-container": "#f4eddd",
+                    "on-surface": "#1e1c12",
+                    "outline-variant": "#c0c9bb",
+                    "tertiary-fixed-dim": "#e7bdb1",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#41493e",
+                    "primary-fixed": "#acf4a4",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#002203",
+                    "surface-container-highest": "#e9e2d2",
+                    "background": "#fff9ec",
+                    "error": "#ba1a1a",
+                    "secondary-fixed-dim": "#ffb957",
+                    "on-secondary-container": "#694300",
+                    "on-secondary-fixed-variant": "#643f00",
+                    "on-tertiary-container": "#e6bcb0",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed": "#ffdbd0",
+                    "inverse-surface": "#333025",
+                    "secondary-container": "#fcab28",
+                    "primary-fixed-dim": "#91d78a",
+                    "surface-dim": "#e0dac9",
+                    "on-primary-fixed-variant": "#0c5216",
+                    "surface-tint": "#2a6b2c",
+                    "primary": "#00450d",
+                    "outline": "#717a6d",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#fff9ec",
+                    "tertiary-container": "#694b42",
+                    "secondary": "#835400",
+                    "inverse-primary": "#91d78a",
+                    "on-tertiary-fixed-variant": "#5d4037"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "md": "16px",
+                    "base": "4px",
+                    "touch-target": "56px",
+                    "sm": "12px",
+                    "xs": "8px",
+                    "lg": "24px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "body-md": ["Noto Sans"],
+                    "display-lg-mobile": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-lg": ["Noto Sans"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "display-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #fff9ec;
+            overflow: hidden;
+        }
+        .language-chip-active {
+            @apply bg-primary-container text-on-primary-container border-transparent;
+        }
+        .pulse-animation {
+            animation: pulse-ring 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .bg-pattern {
+            background-image: radial-gradient(#1b5e20 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            opacity: 0.03;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative font-body-md text-on-surface">
+<!-- Atmospheric Background Pattern -->
+<div class="absolute inset-0 bg-pattern pointer-events-none"></div>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-between px-md py-xl z-10 w-full max-w-md mx-auto">
+<!-- Header Branding Section -->
+<div class="flex flex-col items-center mt-xl text-center">
+<!-- App Logo Container -->
+<div class="w-32 h-32 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center mb-lg relative overflow-hidden">
+<!-- Subtle Gradient Glow -->
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-transparent"></div>
+<span class="material-symbols-outlined text-primary text-[64px] relative z-10" style="font-variation-settings: 'FILL' 1;">
+                    eco
+                </span>
+</div>
+<h1 class="font-headline-md text-headline-md text-primary mb-xs tracking-tight">KisanMitra</h1>
+<div class="flex flex-col gap-base">
+<p class="font-body-md text-body-md text-on-surface-variant px-md">
+                    Smart crop decisions for maximum profit
+                </p>
+<p class="font-body-md text-body-md text-primary opacity-80 font-medium">
+                    मुनाफे के लिए स्मार्ट फसल सलाह
+                </p>
+</div>
+</div>
+<!-- Language Selection Section -->
+<div class="w-full mt-xl">
+<h2 class="font-label-lg text-label-lg text-on-surface-variant text-center mb-md">Select Language / भाषा चुनें</h2>
+<!-- Language Chips Container (Bento-style horizontal scroll simulation) -->
+<div class="flex flex-wrap justify-center gap-sm">
+<button class="language-chip flex items-center justify-center h-touch-target px-lg rounded-full border-2 border-outline-variant bg-surface-container-low font-label-lg text-label-lg transition-all active:scale-95 language-chip-active" onclick="selectLanguage(this)">
+                    English
+                </button>
+<button class="language-chip flex items-center justify-center h-touch-target px-lg rounded-full border-2 border-outline-variant bg-surface-container-low font-label-lg text-label-lg transition-all active:scale-95" onclick="selectLanguage(this)">
+                    हिंदी
+                </button>
+<button class="language-chip flex items-center justify-center h-touch-target px-lg rounded-full border-2 border-outline-variant bg-surface-container-low font-label-lg text-label-lg transition-all active:scale-95" onclick="selectLanguage(this)">
+                    मराठी
+                </button>
+<button class="language-chip flex items-center justify-center h-touch-target px-lg rounded-full border-2 border-outline-variant bg-surface-container-low font-label-lg text-label-lg transition-all active:scale-95" onclick="selectLanguage(this)">
+                    தமிழ்
+                </button>
+<button class="language-chip flex items-center justify-center h-touch-target px-lg rounded-full border-2 border-outline-variant bg-surface-container-low font-label-lg text-label-lg transition-all active:scale-95" onclick="selectLanguage(this)">
+                    తెలుగు
+                </button>
+</div>
+</div>
+<!-- Footer Action Section -->
+<div class="w-full flex flex-col gap-lg items-center mt-xl">
+<!-- Secondary Illustration or Decorative Element -->
+<div class="w-full h-32 rounded-xl bg-surface-container relative overflow-hidden flex items-center justify-center group">
+<div class="absolute inset-0 transition-transform duration-700 group-hover:scale-105" data-alt="A lush green organic farm at sunrise, with soft morning dew on healthy crop leaves. The lighting is warm and golden, creating a supportive and prosperous atmosphere. Digital stewardship aesthetic with high-end photography quality, focusing on agricultural success." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBZNpLis_7yKd6TSL2UMJIJ5c6ZOjI__PP8pdqC29PsYFf69bwaes0cqH3cVuQ5xiIhBTxBvdbFulQKp7J9Vollr35xGDafNAOmCQwK9gIBDTXlaxXgKYWVcX3aUufNMiw36FYZnVvSsnBTqvaA0AunBXepzqgCjnZEWmlRklmGphXtlZ_Vy3mclHxQbyZ2d44SZQnaLQmFPRBq4lNajkj8_eIBsy45bMbsN84NEIKrpHpG_Y_We1MX-Q')">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+<span class="relative z-10 text-white font-label-sm text-label-sm uppercase tracking-widest opacity-80">Empowering Indian Farmers</span>
+</div>
+<!-- Primary Continue Button -->
+<button class="w-full h-touch-target bg-primary text-white rounded-full font-headline-sm text-headline-sm shadow-md active:scale-95 transition-transform flex items-center justify-center gap-sm">
+                Continue
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<p class="font-label-sm text-label-sm text-outline">
+                By continuing, you agree to our <span class="text-primary font-medium">Terms of Service</span>
+</p>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        function selectLanguage(element) {
+            // Remove active classes from all chips
+            document.querySelectorAll('.language-chip').forEach(chip => {
+                chip.classList.remove('bg-primary-container', 'text-on-primary-container', 'border-transparent', 'language-chip-active');
+                chip.classList.add('border-outline-variant', 'bg-surface-container-low');
+            });
+            
+            // Add active classes to selected chip
+            element.classList.remove('border-outline-variant', 'bg-surface-container-low');
+            element.classList.add('bg-primary-container', 'text-on-primary-container', 'border-transparent', 'language-chip-active');
+
+            // Visual feedback on click
+            element.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        // Entrance animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.querySelector('main');
+            mainContent.style.opacity = '0';
+            mainContent.style.transform = 'translateY(20px)';
+            mainContent.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
+            
+            requestAnimationFrame(() => {
+                mainContent.style.opacity = '1';
+                mainContent.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body></html>
