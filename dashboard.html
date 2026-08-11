@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="AgriIntel — AI-powered farm intelligence dashboard. Crop recommendations, market mandi prices, weather & risk, and profit simulation for Indian farmers."/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b5d38'/%3E%3Cpath d='M12 18c-3.3 0-6-2.7-6-6V6h6c3.3 0 6 2.7 6 6s-2.7 6-6 6z' fill='%23a7f3d0'/%3E%3Cpath d='M12 18V6' stroke='%23fff' stroke-width='1.4'/%3E%3C/svg%3E"/>
+  <title>AGRIINTEL — Intelligence Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'Noto Sans', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'], display: ['Inter', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'] } } } };</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./agrintel.css"/>
+  <script src="./agrintel-core.js"></script>
+  <script src="./agrintel-app.js"></script>
+  <style>
+    .app-view { display: none; }
+    .app-view.active { display: block; animation: aiFadeUp .45s cubic-bezier(0.22,1,0.36,1); }
+
+    /* Layout */
+    #sidebar { width: 252px; transition: transform .3s ease; }
+    #appShell { margin-left: 252px; }
+    @media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); position: fixed; }
+      #sidebar.open { transform: translateX(0); }
+      #appShell { margin-left: 0; }
+    }
+
+    .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; color: #46524b; cursor: pointer; transition: all .18s ease; border: 1px solid transparent; }
+    .nav-item:hover { background: #f0f3ee; color: #0b5d38; }
+    .nav-item.nav-on { background: #0b5d38; color: #fff; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
+    .nav-item .mat { font-size: 20px; }
+    .nav-item.nav-on .mat { font-variation-settings: 'FILL' 1; }
+
+    .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; padding: 8px 0; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; color: #7c857f; cursor: pointer; transition: color .18s ease; }
+    .bottom-item .mat { font-size: 22px; }
+    .bottom-item.nav-on { color: #0b5d38; }
+    .bottom-item.nav-on .mat { font-variation-settings: 'FILL' 1; }
+    .bottom-item.nav-on::after { content: ''; display: block; width: 4px; height: 4px; border-radius: 99px; background: #0b5d38; }
+
+    .kpi-icon { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; }
+
+    .mach-chip {
+      padding: 8px 16px; border-radius: 999px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+      background: #f1f0ea; color: #46524b; border: 1.5px solid transparent; cursor: pointer; transition: all .18s ease;
+    }
+    .mach-chip.selected { background: #e2efe7; color: #0b5d38; border-color: #0b5d38; }
+
+    .toggle { position: relative; width: 46px; height: 26px; border-radius: 99px; background: #d9d7cf; transition: background .2s ease; cursor: pointer; flex-shrink: 0; }
+    .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 99px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s ease; }
+    .toggle.on { background: #0b5d38; }
+    .toggle.on::after { transform: translateX(20px); }
+
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  </style>
+</head>
+<body class="app-bg min-h-screen">
+
+<!-- ================= SIDEBAR (desktop) ================= -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-[#e7e4dc] bg-white">
+  <div class="flex items-center gap-2.5 px-5 py-5">
+    <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#0b5d38] text-white shadow-md shadow-emerald-900/20"><span class="material-symbols-outlined text-[20px] filled">sprout</span></span>
+    <span class="font-display text-lg font-extrabold tracking-tight text-[#0a3d27]">AGRIINTEL</span>
+  </div>
+  <div id="sideNav" class="flex-1 space-y-1 overflow-y-auto px-3 py-2 nice-scroll"></div>
+  <div class="border-t border-[#e7e4dc] p-3">
+    <div class="rounded-2xl bg-[#0a3d27] p-4 text-white">
+      <p class="font-display text-sm font-bold" id="sideFarmName">Nagpur, Maharashtra</p>
+      <p class="mt-0.5 text-[11px] text-white/60" id="sideFarmMeta">5 Acres · Black Soil</p>
+      <a href="./analysis.html" class="mt-3 flex items-center justify-center gap-1.5 rounded-lg bg-white/10 py-2 text-xs font-bold hover:bg-white/20 transition-colors">
+        <span class="material-symbols-outlined text-[15px]">refresh</span> Re-run analysis
+      </a>
+    </div>
+  </div>
+</aside>
+<div id="sidebarBackdrop" class="fixed inset-0 z-40 hidden bg-black/40 backdrop-blur-sm lg:hidden" onclick="toggleSidebar(false)"></div>
+
+<!-- ================= SHELL ================= -->
+<div id="appShell">
+  <!-- Top bar -->
+  <header class="sticky top-0 z-30 border-b border-[#e7e4dc] bg-white/85 backdrop-blur-xl">
+    <div class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <button class="grid h-10 w-10 place-items-center rounded-xl border border-[#e7e4dc] bg-white text-[#0b5d38] lg:hidden" onclick="toggleSidebar(true)">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div>
+          <h1 id="viewTitle" class="font-display text-lg font-extrabold tracking-tight text-[#0a3d27]">Dashboard</h1>
+          <p id="viewBread" class="text-[11px] text-[#7c857f] hidden sm:block">AgriIntel · Intelligence dashboard</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="hidden items-center gap-2 rounded-full border border-[#e7e4dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#46524b] md:flex">
+          <span class="material-symbols-outlined text-[15px] text-[#0b5d38] filled">location_on</span>
+          <span id="topFarm">Nagpur, Maharashtra</span>
+        </div>
+        <button class="relative grid h-10 w-10 place-items-center rounded-xl border border-[#e7e4dc] bg-white text-[#46524b] hover:text-[#0b5d38] transition-colors" onclick="AIApp.toast('No new notifications')">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#e11d48]"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+
+    <!-- ==================== VIEW: DASHBOARD ==================== -->
+    <section class="app-view active" id="view-dashboard">
+      <!-- Greeting -->
+      <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold tracking-tight text-[#0a3d27] sm:text-3xl" id="greeting">Good morning, Kisan!</h2>
+          <p class="mt-1 text-sm text-[#7c857f]" id="greetingSub">Here's what AgriIntel sees for your farm today.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="pill pill-brand"><span class="material-symbols-outlined text-[14px]">location_on</span> <span id="kpiFarm">Nagpur, Maharashtra</span></span>
+          <span class="pill pill-gray" id="kpiArea">5 Acres</span>
+          <span class="pill pill-gray" id="kpiSoil">Black Soil</span>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6" id="kpiGrid"></div>
+
+      <!-- Recommendation + Why -->
+      <div class="mt-6 grid gap-4 lg:grid-cols-3">
+        <div class="lg:col-span-2" id="recCard"></div>
+        <div id="whyCard"></div>
+      </div>
+
+      <!-- Comparison + Market -->
+      <div class="mt-6 grid gap-4 xl:grid-cols-5">
+        <div class="xl:col-span-2" id="compareCard"></div>
+        <div class="xl:col-span-3" id="marketCard"></div>
+      </div>
+
+      <!-- Selling + Weather + Risk -->
+      <div class="mt-6 grid gap-4 lg:grid-cols-3" id="bottomRow"></div>
+
+      <!-- Profit simulator (dashboard embed) -->
+      <div class="mt-6" id="simEmbed"></div>
+    </section>
+
+    <!-- ==================== VIEW: MY FARM ==================== -->
+    <section class="app-view" id="view-farm">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">My Farm</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Your farm profile — the inputs behind every decision.</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="toggleEditFarm()"><span class="material-symbols-outlined text-[16px]">edit</span> <span id="editBtnLabel">Edit Farm</span></button>
+      </div>
+
+      <div class="mt-6 grid gap-4 md:grid-cols-2" id="farmCards"></div>
+
+      <!-- Edit form -->
+      <div class="card mt-6 hidden p-6" id="farmEditForm">
+        <h3 class="font-display text-lg font-bold text-[#0a3d27]">Edit farm details</h3>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          <div class="field"><label>Village</label><input class="input" id="eVillage"/></div>
+          <div class="field"><label>District</label><input class="input" id="eDistrict"/></div>
+          <div class="field"><label>State</label><input class="input" id="eState"/></div>
+          <div class="field"><label>Land Area</label><input class="input" id="eArea" type="number" min="0.1" step="0.1"/></div>
+          <div class="field"><label>Soil Type</label><select class="select" id="eSoil"></select></div>
+          <div class="field"><label>Irrigation</label><select class="select" id="eIrr"></select></div>
+          <div class="field"><label>Water Availability</label><select class="select" id="eWater"><option>High</option><option>Medium</option><option>Low</option></select></div>
+          <div class="field"><label>Previous Crop</label><select class="select" id="ePrev"></select></div>
+        </div>
+        <div class="mt-6 flex gap-3">
+          <button class="btn btn-primary" onclick="saveFarmEdit()">Save changes</button>
+          <button class="btn btn-ghost" onclick="toggleEditFarm()">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW: CROP INTELLIGENCE ==================== -->
+    <section class="app-view" id="view-crops">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Crop Intelligence</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Compare every option before you plant. Onion is highlighted as today's recommendation.</p>
+        </div>
+        <a href="./analysis.html" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined text-[16px]">add</span> New analysis</a>
+      </div>
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" id="cropGrid"></div>
+      <div class="card mt-6 p-6" id="cropDetail"></div>
+    </section>
+
+    <!-- ==================== VIEW: MARKET INTELLIGENCE ==================== -->
+    <section class="app-view" id="view-market">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Market Intelligence</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Live mandi prices, trend momentum and a forward price outlook.</p>
+        </div>
+        <span class="pill pill-sky"><span class="material-symbols-outlined text-[14px]">currency_rupee</span> Prices in ₹ / quintal</span>
+      </div>
+      <div class="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-3" id="mktChips"></div>
+      <div class="mt-6 grid gap-4 lg:grid-cols-3">
+        <div class="lg:col-span-2" id="mktChartCard"></div>
+        <div id="sellCard"></div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW: WEATHER & RISK ==================== -->
+    <section class="app-view" id="view-weather">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Weather & Risk</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Seven-day outlook and the risks that could change your season.</p>
+        </div>
+      </div>
+      <div class="mt-6 grid gap-4 lg:grid-cols-3">
+        <div class="lg:col-span-2 grid gap-4">
+          <div id="wxNow"></div>
+          <div id="wxWeek"></div>
+        </div>
+        <div id="wxRisk"></div>
+      </div>
+      <div class="mt-4" id="decisionRisk"></div>
+    </section>
+
+    <!-- ==================== VIEW: PROFIT SIMULATOR ==================== -->
+    <section class="app-view" id="view-simulator">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">How Much Could I Earn?</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Adjust any input and see your profit change instantly.</p>
+        </div>
+      </div>
+      <div class="mt-6" id="simFull"></div>
+    </section>
+
+    <!-- ==================== VIEW: SETTINGS ==================== -->
+    <section class="app-view" id="view-settings">
+      <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Settings</h2>
+          <p class="mt-1 text-sm text-[#7c857f]">Manage your profile, preferences and app data.</p>
+        </div>
+      </div>
+      <div class="mt-6 grid gap-4 lg:grid-cols-2" id="settingsGrid"></div>
+      <div class="card mt-6 p-6" id="aboutCard"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<nav class="fixed bottom-0 inset-x-0 z-50 flex items-stretch border-t border-[#e7e4dc] bg-white shadow-[0_-4px_20px_rgba(21,33,26,0.06)] lg:hidden" id="bottomNav"></nav>
+
+<!-- ================= MORE SHEET ================= -->
+<div class="sheet" id="moreSheet">
+  <div class="sheet-backdrop" onclick="closeMore()"></div>
+  <div class="sheet-panel">
+    <div class="mx-auto h-1 w-10 rounded-full bg-[#d9d7cf]"></div>
+    <p class="mt-4 font-display text-sm font-extrabold uppercase tracking-widest text-[#7c857f]">More</p>
+    <div class="mt-3 space-y-1" id="moreList"></div>
+  </div>
+</div>
+
+<!-- ================= SELL MODAL ================= -->
+<div class="fixed inset-0 z-[90] hidden items-center justify-center bg-[#05291c]/60 backdrop-blur-sm p-4" id="sellModal" onclick="closeSellModal()">
+  <div class="card max-h-[90vh] w-full max-w-md overflow-y-auto p-6 nice-scroll" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between">
+      <h3 class="font-display text-xl font-extrabold text-[#0a3d27]">Simulate Sell Date</h3>
+      <button class="grid h-9 w-9 place-items-center rounded-full hover:bg-[#f1f0ea]" onclick="closeSellModal()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="mt-1 text-sm text-[#7c857f]">Compare what each timing could mean for your 5-acre onion crop.</p>
+    <div id="sellOptions" class="mt-5 space-y-3"></div>
+    <button class="btn btn-primary mt-5 w-full" onclick="closeSellModal()">Done</button>
+  </div>
+</div>
+
+<script>
+  /* ==================== NAV ==================== */
+  var NAV = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard' },
+    { id: 'farm', label: 'My Farm', icon: 'home_work' },
+    { id: 'crops', label: 'Crop Intelligence', icon: 'sprout' },
+    { id: 'market', label: 'Market Intelligence', icon: 'storefront' },
+    { id: 'weather', label: 'Weather & Risk', icon: 'partly_cloudy_day' },
+    { id: 'simulator', label: 'Profit Simulator', icon: 'calculate' },
+    { id: 'settings', label: 'Settings', icon: 'settings' }
+  ];
+  var MAIN_BOTTOM = ['dashboard', 'farm', 'market', 'weather'];
+  var MORE_ITEMS = ['crops', 'simulator', 'settings'];
+  var TITLES = {
+    dashboard: 'Dashboard', farm: 'My Farm', crops: 'Crop Intelligence', market: 'Market Intelligence',
+    weather: 'Weather & Risk', simulator: 'Profit Simulator', settings: 'Settings'
+  };
+
+  function buildNav() {
+    document.getElementById('sideNav').innerHTML = NAV.map(function (n) {
+      return '<button class="nav-item" data-nav="' + n.id + '" onclick="go(\'' + n.id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label + '</button>';
+    }).join('');
+    document.getElementById('bottomNav').innerHTML = MAIN_BOTTOM.map(function (id) {
+      var n = NAV.filter(function (x) { return x.id === id; })[0];
+      return '<button class="bottom-item" data-nav="' + id + '" onclick="go(\'' + id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label.split(' ')[0] + '</button>';
+    }).join('') + '<button class="bottom-item" onclick="openMore()"><span class="material-symbols-outlined mat">more_horiz</span>More</button>';
+    document.getElementById('moreList').innerHTML = MORE_ITEMS.map(function (id) {
+      var n = NAV.filter(function (x) { return x.id === id; })[0];
+      return '<button class="nav-item w-full" data-nav="' + id + '" onclick="go(\'' + id + '\');closeMore()"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label + '</button>';
+    }).join('');
+  }
+
+  function go(id) {
+    AIApp.go(id);
+    document.getElementById('viewTitle').textContent = TITLES[id];
+    document.getElementById('viewBread').textContent = 'AgriIntel · ' + TITLES[id];
+    toggleSidebar(false);
+  }
+  function toggleSidebar(open) {
+    var s = document.getElementById('sidebar'), b = document.getElementById('sidebarBackdrop');
+    if (open === false) { s.classList.remove('open'); b.classList.add('hidden'); }
+    else { s.classList.add('open'); b.classList.remove('hidden'); }
+  }
+  function openMore() { document.getElementById('moreSheet').classList.add('open'); }
+  function closeMore() { document.getElementById('moreSheet').classList.remove('open'); }
+
+  /* ==================== FARM CONTEXT ==================== */
+  var farm = AgriIntel.getFarm();
+
+  function applyFarm() {
+    var areaLabel = farm.area + ' ' + farm.unit;
+    document.getElementById('sideFarmName').textContent = farm.village + ', ' + farm.state;
+    document.getElementById('sideFarmMeta').textContent = areaLabel + ' · ' + farm.soil;
+    document.getElementById('topFarm').textContent = farm.village + ', ' + farm.state;
+    document.getElementById('kpiFarm').textContent = farm.village + ', ' + farm.state;
+    document.getElementById('kpiArea').textContent = areaLabel;
+    document.getElementById('kpiSoil').textContent = farm.soil;
+    document.title = 'AGRIINTEL — ' + farm.village + ', ' + farm.state;
+  }
+
+  /* ==================== DASHBOARD VIEW ==================== */
+  function buildDashboard() {
+    // greeting
+    var h = new Date().getHours();
+    var g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = g + ', Kisan!';
+    var sub = document.getElementById('greetingSub');
+    if (sub) sub.textContent = "Here's today's plan for your " + farm.area + ' ' + farm.unit + ' farm in ' + farm.village + ', ' + farm.state + '.';
+
+    // KPIs — always derived from the farm's current crop so numbers stay honest
+    var cropKey = AgriIntel.getCrops()[farm.crop] ? farm.crop : 'onion';
+    var crop = AgriIntel.getCrops()[cropKey];
+    var kpis = [
+      { label: 'Expected Yield', value: String(crop.yield), unit: 'q/acre', icon: 'scale', cls: 'bg-emerald-50 text-emerald-700', acc: 'emerald' },
+      { label: 'Expected Revenue', value: AIApp.inr(crop.revenue), unit: '/acre', icon: 'trending_up', cls: 'bg-sky-50 text-[#0284c7]', acc: 'sky' },
+      { label: 'Estimated Cost', value: AIApp.inr(crop.cost), unit: '/acre', icon: 'payments', cls: 'bg-[#f1f0ea] text-[#46524b]', acc: 'gray' },
+      { label: 'Expected Profit', value: AIApp.inr(crop.profit), unit: '/acre', icon: 'savings', cls: 'bg-[#0b5d38] text-white', acc: 'green' },
+      { label: 'Risk', value: crop.risk.toUpperCase(), unit: '', icon: 'speed', cls: 'bg-amber-50 text-[#d97706]', acc: 'amber' },
+      { label: 'Confidence', value: crop.confidence + '%', unit: '', icon: 'verified', cls: 'bg-[#e2efe7] text-[#0b5d38]', acc: 'green' }
+    ];
+    document.getElementById('kpiGrid').innerHTML = kpis.map(function (k, i) {
+      var tone = k.acc === 'green' ? '#0b5d38' : k.acc === 'emerald' ? '#059669' : k.acc === 'sky' ? '#0284c7' : k.acc === 'amber' ? '#d97706' : '#46524b';
+      return '<div class="reveal card card-hover p-4">' +
+        '<div class="flex items-center justify-between">' +
+        '<span class="kpi-icon ' + k.cls + '"><span class="material-symbols-outlined text-[20px]' + (k.icon === 'trending_up' || k.icon === 'verified' ? ' filled' : '') + '">' + k.icon + '</span></span>' +
+        (k.label === 'Risk' ? '<span class="pill pill-amber">' + k.value + '</span>' : '') +
+        '</div>' +
+        '<p class="mt-3 font-display text-[26px] font-extrabold leading-none tracking-tight text-[#0a3d27]">' + k.value + '</p>' +
+        '<p class="mt-1.5 text-xs text-[#7c857f]">' + k.label + (k.unit ? ' · <span style="color:' + tone + '" class="font-semibold">' + k.unit + '</span>' : '') + '</p>' +
+        '</div>';
+    }).join('');
+
+    // Recommendation card
+    document.getElementById('recCard').innerHTML =
+      '<div class="reveal card-dark p-6 sm:p-7 h-full relative overflow-hidden">' +
+      '<div class="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-emerald-500/10"></div>' +
+      '<div class="relative">' +
+      '<div class="flex flex-wrap items-center justify-between gap-3">' +
+      '<span class="pill pill-white"><span class="material-symbols-outlined text-[14px]">auto_awesome</span> AgriIntel Recommendation</span>' +
+      '<span class="pill pill-green">Confidence 84%</span>' +
+      '</div>' +
+      '<div class="mt-5 flex flex-wrap items-end justify-between gap-4">' +
+      '<div><p class="text-[11px] font-semibold uppercase tracking-widest text-white/50">Recommended Crop</p>' +
+      '<h3 class="mt-1 font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">' + crop.name.toUpperCase() + '</h3></div>' +
+      '<span class="grid h-14 w-14 place-items-center rounded-2xl bg-white/10"><span class="material-symbols-outlined text-[30px] text-emerald-300 filled">sprout</span></span>' +
+      '</div>' +
+      '<p class="mt-4 max-w-lg text-sm leading-relaxed text-white/75">Based on your soil, weather outlook, historical market prices and estimated production costs, ' +
+      crop.name.toLowerCase() + ' currently provides the strongest risk-adjusted opportunity.</p>' +
+      '<div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Expected Yield</p><p class="mt-0.5 font-display text-lg font-bold text-white">' + crop.yieldMin + '–' + crop.yieldMax + ' <span class="text-xs text-white/50">q/acre</span></p></div>' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Expected Revenue</p><p class="mt-0.5 font-display text-lg font-bold text-emerald-300">' + AIApp.inr(crop.revenue) + '<span class="text-xs text-white/50"> /acre</span></p></div>' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Estimated Cost</p><p class="mt-0.5 font-display text-lg font-bold text-white">' + AIApp.inr(crop.cost) + '<span class="text-xs text-white/50"> /acre</span></p></div>' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Expected Profit</p><p class="mt-0.5 font-display text-lg font-bold text-emerald-300">' + AIApp.inr(crop.profit) + '<span class="text-xs text-white/50"> /acre</span></p></div>' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Risk</p><p class="mt-0.5"><span class="pill ' + AIApp.riskPillClass(crop.risk) + '">' + crop.risk + '</span></p></div>' +
+      '<div class="rounded-xl bg-white/8 border border-white/10 p-3.5"><p class="text-[11px] text-white/50">Profit Range</p><p class="mt-0.5 font-display text-lg font-bold text-white">' + AIApp.inr(crop.profit * 0.7) + '–' + AIApp.inr(crop.profit * 1.23) + '</p></div>' +
+      '</div>' +
+      '<div class="mt-6 flex flex-wrap gap-3">' +
+      '<button class="btn btn-amber btn-sm" onclick="go(\'market\')">View Full Analysis <span class="material-symbols-outlined text-[16px]">arrow_forward</span></button>' +
+      '<button class="btn btn-white btn-sm" onclick="go(\'crops\')">Compare Crops</button>' +
+      '</div>' +
+      '</div></div>';
+
+    // Why onion
+    var why = crop.suitability;
+    document.getElementById('whyCard').innerHTML =
+      '<div class="reveal card card-hover p-6 h-full">' +
+      '<h3 class="font-display text-lg font-bold text-[#0a3d27]">Why ' + crop.name + '?</h3>' +
+      '<p class="mt-1 text-xs text-[#7c857f]">AgriIntel explains every recommendation — never a blind prediction.</p>' +
+      '<ul class="mt-5 space-y-3">' + why.map(function (w, i) {
+        var icons = ['texture', 'partly_cloudy_day', 'storefront', 'payments', 'shield'];
+        return '<li class="flex items-start gap-3"><span class="grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg bg-emerald-50 text-emerald-700"><span class="material-symbols-outlined text-[16px]">check</span></span>' +
+          '<span class="pt-1 text-sm font-medium text-[#46524b]">' + w + '</span></li>';
+      }).join('') + '</ul>' +
+      '<div class="mt-5 rounded-xl bg-[#fbf7ed] border border-[#e7e4dc] p-4">' +
+      '<p class="text-xs leading-relaxed text-[#7c857f]"><span class="font-bold text-[#0a3d27]">The decision:</span> ' + crop.description + '</p></div>' +
+      '</div>';
+
+    // Comparison table
+    document.getElementById('compareCard').innerHTML = AIApp.skeleton({ rows: 4, h: 16 });
+    AgriIntel.getCropComparison().then(function (rows) {
+      document.getElementById('compareCard').innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Crop Comparison</h3>' +
+        '<button class="text-xs font-bold text-[#0b5d38] hover:underline" onclick="go(\'crops\')">View all</button></div>' +
+        '<div class="mt-4 overflow-x-auto">' +
+        '<table class="w-full text-left text-sm">' +
+        '<thead><tr class="text-[11px] uppercase tracking-wider text-[#7c857f]">' +
+        '<th class="pb-2.5 pr-2 font-semibold">Crop</th><th class="pb-2.5 pr-2 font-semibold">Revenue</th><th class="pb-2.5 pr-2 font-semibold">Cost</th><th class="pb-2.5 pr-2 font-semibold">Profit</th><th class="pb-2.5 pr-2 font-semibold">Risk</th><th class="pb-2.5 font-semibold">Conf.</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(function (r) {
+          var isRec = r.key === 'onion';
+          return '<tr class="border-t border-[#f0ede6]' + (isRec ? ' bg-emerald-50/60' : '') + '">' +
+            '<td class="py-3 pr-2 font-display font-bold text-[#0a3d27]">' + (isRec ? '<span class="material-symbols-outlined text-[15px] text-[#0b5d38] filled mr-1 align-middle">star</span>' : '') + r.name + '</td>' +
+            '<td class="py-3 pr-2 font-semibold">' + AIApp.inr(r.revenue) + '</td>' +
+            '<td class="py-3 pr-2 text-[#7c857f]">' + AIApp.inr(r.cost) + '</td>' +
+            '<td class="py-3 pr-2 font-semibold text-emerald-700">' + AIApp.inr(r.profit) + '</td>' +
+            '<td class="py-3 pr-2"><span class="pill ' + AIApp.riskPillClass(r.risk) + '">' + r.risk + '</span></td>' +
+            '<td class="py-3 font-semibold">' + r.confidence + '%</td>' +
+            '</tr>';
+        }).join('') +
+        '</tbody></table></div></div>';
+    });
+
+    // Market card
+    buildMarketCard(document.getElementById('marketCard'));
+
+    // Bottom row: selling + weather + risk
+    var row = document.getElementById('bottomRow');
+    row.innerHTML = '<div id="sellDash"></div><div id="wxDash"></div><div id="riskDash"></div>';
+    buildSellCard(document.getElementById('sellDash'));
+    buildWeatherDash(document.getElementById('wxDash'));
+    buildRiskCard(document.getElementById('riskDash'));
+
+    // Simulator embed
+    buildSimulator(document.getElementById('simEmbed'), { compact: true, prefix: 'simd' });
+  }
+
+  /* ==================== MARKET ==================== */
+  function buildMarketCard(el, uid) {
+    uid = uid || 'dashChart';
+    el.innerHTML = AIApp.skeleton({ rows: 3, h: 16 });
+    AgriIntel.getMarketPrices('onion').then(function (m) {
+      el.innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex flex-wrap items-start justify-between gap-3">' +
+        '<div><h3 class="font-display text-lg font-bold text-[#0a3d27]">Market Intelligence · Onion</h3>' +
+        '<p class="text-xs text-[#7c857f]">Nagpur APMC mandi · ₹/quintal</p></div>' +
+        '<span class="pill pill-green"><span class="material-symbols-outlined text-[14px]">trending_up</span> +6.4% 7d</span></div>' +
+        '<div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">' +
+        '<div><p class="text-[11px] text-[#7c857f]">Current Price</p><p class="font-display text-2xl font-extrabold text-[#0a3d27]">₹1,850<span class="text-sm font-semibold text-[#7c857f]"> /q</span></p></div>' +
+        '<div><p class="text-[11px] text-[#7c857f]">7 Day</p><p class="font-bold text-emerald-700">+6.4%</p></div>' +
+        '<div><p class="text-[11px] text-[#7c857f]">30 Day</p><p class="font-bold text-emerald-700">+11.8%</p></div>' +
+        '<div><p class="text-[11px] text-[#7c857f]">Expected Range</p><p class="font-bold text-[#0a3d27]">₹1,750 – ₹2,150</p></div>' +
+        '</div>' +
+        '<div class="mt-4 rounded-xl border border-[#f0ede6] bg-[#fbfaf6] p-3">' +
+        '<div class="mb-1 flex items-center gap-4 text-[11px] font-medium text-[#7c857f]">' +
+        '<span><span class="legend-dot bg-emerald-600"></span> Historical Price</span>' +
+        '<span><span class="legend-dot bg-[#0284c7]" style="border-radius:0"></span> AI Forecast</span>' +
+        '<span class="ml-auto font-bold text-[#0a3d27]">Market Price Trend</span></div>' +
+        '<div id="' + uid + '"></div></div>' +
+        '<button class="mt-4 w-full btn btn-ghost btn-sm" onclick="go(\'market\')">Open Market Intelligence <span class="material-symbols-outlined text-[16px]">arrow_forward</span></button>' +
+        '</div>';
+      AIApp.lineChart(document.getElementById(uid), m.history.concat(m.forecast), m.history.length, { width: 520, height: 150 });
+    });
+  }
+
+  function buildSellCard(el) {
+    el.innerHTML = AIApp.skeleton({ rows: 3, h: 16 });
+    AgriIntel.getSellRecommendation('onion').then(function (s) {
+      el.innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Selling Intelligence</h3>' +
+        '<span class="pill pill-amber"><span class="material-symbols-outlined text-[14px]">hourglass_top</span> ' + s.action + '</span></div>' +
+        '<p class="mt-3 text-sm leading-relaxed text-[#46524b]">' + s.message + '</p>' +
+        '<div class="mt-4 grid grid-cols-2 gap-3">' +
+        '<div class="rounded-xl bg-[#f6f5f0] p-3"><p class="text-[11px] text-[#7c857f]">Current</p><p class="font-display text-lg font-extrabold text-[#0a3d27]">₹1,850<span class="text-xs text-[#7c857f]">/q</span></p></div>' +
+        '<div class="rounded-xl bg-emerald-50 p-3"><p class="text-[11px] text-emerald-700">Expected</p><p class="font-display text-lg font-extrabold text-emerald-700">₹2,050<span class="text-xs">/q</span></p></div>' +
+        '<div class="rounded-xl bg-[#f6f5f0] p-3"><p class="text-[11px] text-[#7c857f]">Potential Upside</p><p class="font-display text-lg font-extrabold text-[#0a3d27]">+10.8%</p></div>' +
+        '<div class="rounded-xl bg-[#f6f5f0] p-3"><p class="text-[11px] text-[#7c857f]">Confidence</p><p class="font-display text-lg font-extrabold text-[#0a3d27]">76%</p></div>' +
+        '</div>' +
+        '<button class="mt-4 w-full btn btn-amber btn-sm" onclick="openSellModal()"><span class="material-symbols-outlined text-[16px]">event</span> Simulate Sell Date</button>' +
+        '</div>';
+    });
+  }
+
+  function openSellModal() {
+    document.getElementById('sellModal').classList.remove('hidden');
+    document.getElementById('sellModal').classList.add('flex');
+    var area = farm.area || 5;
+    var opts = [
+      { t: 'Sell Now', d: 'Current mandi rate, cash today', price: 1850, rec: false },
+      { t: 'Wait 10–14 Days', d: 'Recommended — market momentum is upward', price: 2050, rec: true },
+      { t: 'Wait 30 Days', d: 'Risk of price softening after harvest wave', price: 1750, rec: false }
+    ];
+    document.getElementById('sellOptions').innerHTML = opts.map(function (o) {
+      var rev = 92 * o.price, prof = rev - 74000;
+      return '<div class="rounded-2xl border p-4 ' + (o.rec ? 'border-[#0b5d38] bg-emerald-50/60' : 'border-[#e7e4dc]') + '">' +
+        '<div class="flex items-center justify-between">' +
+        '<p class="font-display font-bold text-[#0a3d27]">' + o.t + '</p>' +
+        (o.rec ? '<span class="pill pill-green">Recommended</span>' : '') +
+        '</div>' +
+        '<p class="mt-1 text-xs text-[#7c857f]">' + o.d + '</p>' +
+        '<div class="mt-3 grid grid-cols-3 gap-2 text-center">' +
+        '<div><p class="text-[11px] text-[#7c857f]">Price</p><p class="font-bold">₹' + o.price + '</p></div>' +
+        '<div><p class="text-[11px] text-[#7c857f]">Revenue/' + area + ' ac</p><p class="font-bold">' + AIApp.inr(rev * area) + '</p></div>' +
+        '<div><p class="text-[11px] text-[#7c857f]">Profit/' + area + ' ac</p><p class="font-bold text-emerald-700">' + AIApp.inr(prof * area) + '</p></div>' +
+        '</div></div>';
+    }).join('');
+  }
+  function closeSellModal() {
+    document.getElementById('sellModal').classList.add('hidden');
+    document.getElementById('sellModal').classList.remove('flex');
+  }
+
+  /* ==================== WEATHER ==================== */
+  function buildWeatherDash(el) {
+    el.innerHTML = AIApp.skeleton({ rows: 4, h: 14 });
+    AgriIntel.getWeatherData().then(function (w) {
+      el.innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Weather Outlook</h3>' +
+        '<span class="material-symbols-outlined text-[#0284c7]">partly_cloudy_day</span></div>' +
+        '<div class="mt-3 flex items-end gap-3"><p class="font-display text-4xl font-extrabold text-[#0a3d27]">' + w.current.temp + '°C</p>' +
+        '<p class="pb-1 text-sm text-[#7c857f]">' + w.current.condition + '</p></div>' +
+        '<div class="mt-4 grid grid-cols-3 gap-2 text-center">' +
+        '<div class="rounded-lg bg-sky-50 py-2.5"><p class="text-[10px] text-[#7c857f]">Rainfall</p><p class="font-bold text-[#0284c7]">' + w.current.rainfall + ' mm</p></div>' +
+        '<div class="rounded-lg bg-sky-50 py-2.5"><p class="text-[10px] text-[#7c857f]">Humidity</p><p class="font-bold text-[#0284c7]">' + w.current.humidity + '%</p></div>' +
+        '<div class="rounded-lg bg-sky-50 py-2.5"><p class="text-[10px] text-[#7c857f]">Wind</p><p class="font-bold text-[#0284c7]">' + w.current.wind + ' km/h</p></div>' +
+        '</div>' +
+        '<div class="mt-4 flex justify-between rounded-xl bg-[#f6f5f0] px-3 py-2.5">' +
+        w.forecast.slice(0, 5).map(function (f) {
+          return '<div class="text-center flex-1"><p class="text-[10px] font-bold text-[#7c857f]">' + f.day + '</p>' +
+            '<span class="material-symbols-outlined text-[16px] text-[#0284c7]">' + f.icon + '</span>' +
+            '<p class="text-[10px] font-semibold">' + f.hi + '°</p></div>';
+        }).join('') +
+        '</div>' +
+        '<button class="mt-4 w-full btn btn-ghost btn-sm" onclick="go(\'weather\')">Weather & Risk <span class="material-symbols-outlined text-[16px]">arrow_forward</span></button>' +
+        '</div>';
+    });
+  }
+
+  function buildWeatherView() {
+    document.getElementById('wxNow').innerHTML = AIApp.skeleton({ rows: 2, h: 26 });
+    document.getElementById('wxWeek').innerHTML = AIApp.skeleton({ rows: 5, h: 16 });
+    document.getElementById('wxRisk').innerHTML = AIApp.skeleton({ rows: 4, h: 14 });
+    AgriIntel.getWeatherData().then(function (w) {
+      document.getElementById('wxNow').innerHTML =
+        '<div class="reveal card card-hover p-6">' +
+        '<div class="flex flex-wrap items-center justify-between gap-4">' +
+        '<div><p class="text-[11px] font-semibold uppercase tracking-widest text-[#7c857f]">Current conditions</p>' +
+        '<div class="mt-2 flex items-end gap-3"><p class="font-display text-5xl font-extrabold text-[#0a3d27]">' + w.current.temp + '°C</p>' +
+        '<p class="pb-1.5 text-sm font-medium text-[#46524b]">' + w.current.condition + '<br><span class="text-xs text-[#7c857f]">Feels like ' + w.current.feelsLike + '°C</span></p></div></div>' +
+        '<span class="material-symbols-outlined text-[64px] text-[#0284c7]">partly_cloudy_day</span></div>' +
+        '<div class="mt-5 grid grid-cols-3 gap-3">' +
+        '<div class="rounded-xl bg-sky-50 p-4 text-center"><span class="material-symbols-outlined text-[#0284c7]">rainy</span><p class="mt-1 font-display font-bold text-[#0a3d27]">' + w.current.rainfall + ' mm</p><p class="text-[11px] text-[#7c857f]">Rainfall</p></div>' +
+        '<div class="rounded-xl bg-sky-50 p-4 text-center"><span class="material-symbols-outlined text-[#0284c7]">humidity_percentage</span><p class="mt-1 font-display font-bold text-[#0a3d27]">' + w.current.humidity + '%</p><p class="text-[11px] text-[#7c857f]">Humidity</p></div>' +
+        '<div class="rounded-xl bg-sky-50 p-4 text-center"><span class="material-symbols-outlined text-[#0284c7]">air</span><p class="mt-1 font-display font-bold text-[#0a3d27]">' + w.current.wind + ' km/h</p><p class="text-[11px] text-[#7c857f]">Wind</p></div>' +
+        '</div></div>';
+
+      document.getElementById('wxWeek').innerHTML =
+        '<div class="reveal card card-hover p-6">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">7-Day Forecast</h3>' +
+        '<span class="text-xs font-medium text-[#7c857f]">Hi / Lo</span></div>' +
+        '<div class="mt-4 space-y-2">' +
+        w.forecast.map(function (f, i) {
+          var today = i === 0 ? ' border-[#0b5d38] bg-emerald-50/50' : ' border-transparent';
+          return '<div class="flex items-center justify-between rounded-xl border ' + today + ' px-4 py-2.5">' +
+            '<span class="w-12 font-display text-sm font-bold text-[#0a3d27]">' + f.day + '</span>' +
+            '<span class="material-symbols-outlined text-[20px] text-[#0284c7]">' + f.icon + '</span>' +
+            '<div class="flex w-28 items-center justify-between text-sm"><span class="text-[#7c857f]">' + f.lo + '°</span>' +
+            '<div class="mx-2 h-1.5 flex-1 rounded-full bg-[#ecebe4]"><div class="h-full rounded-full" style="width:' + ((f.hi - f.lo) * 5) + '%;background:#059669"></div></div>' +
+            '<span class="font-bold text-[#0a3d27]">' + f.hi + '°</span></div>' +
+            '<span class="w-12 text-right text-xs font-medium text-[#0284c7]">' + f.rain + '%</span>' +
+            '</div>';
+        }).join('') +
+        '</div></div>';
+
+      // Weather risk + decision risk
+      var factors = w.risk.factors;
+      document.getElementById('wxRisk').innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Weather Risk</h3>' +
+        '<span class="pill pill-amber">' + w.risk.overall + '</span></div>' +
+        '<div class="mt-3">' + gaugeHTML('Medium', 'Combined outlook') + '</div>' +
+        '<div class="mt-4 space-y-4">' +
+        factors.map(function (f) {
+          var tone = f.level === 'Low' ? ['#059669', 'pill-green'] : f.level === 'Medium' ? ['#d97706', 'pill-amber'] : ['#e11d48', 'pill-red'];
+          return '<div><div class="mb-1 flex items-center justify-between text-xs font-semibold text-[#46524b]">' +
+            '<span>' + f.label + '</span><span class="pill ' + tone[1] + '">' + f.level + '</span></div>' +
+            '<div class="bar"><span style="width:0%;background:' + tone[0] + '" data-w="' + f.score + '"></span></div></div>';
+        }).join('') +
+        '</div></div>';
+
+      document.getElementById('decisionRisk').innerHTML = AIApp.skeleton({ rows: 3, h: 14 });
+      AgriIntel.getRiskAnalysis('onion').then(function (r) {
+        document.getElementById('decisionRisk').innerHTML =
+          '<div class="reveal card card-hover p-6 mt-4">' +
+          '<div class="grid gap-6 lg:grid-cols-[1fr_1.2fr]">' +
+          '<div><h3 class="font-display text-lg font-bold text-[#0a3d27]">Decision Risk</h3>' +
+          '<p class="mt-1 text-xs text-[#7c857f]">How much of your profit is at stake, and from what.</p>' +
+          '<div class="mt-3">' + gaugeHTML(r.overall, 'Overall risk') + '</div></div>' +
+          '<div><div class="mt-2 space-y-4">' +
+          r.breakdown.map(function (b) {
+            var tone = b.score > 33 ? '#d97706' : b.score > 20 ? '#059669' : '#059669';
+            return '<div><div class="mb-1 flex items-center justify-between text-xs font-semibold text-[#46524b]">' +
+              '<span>' + b.label + '</span><span class="font-display font-bold text-[#0a3d27]">' + b.score + '%</span></div>' +
+              '<div class="bar"><span style="width:0%;background:' + tone + '" data-w="' + b.score + '"></span></div></div>';
+          }).join('') +
+          '</div>' +
+          '<div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4">' +
+          '<p class="font-display text-sm font-bold text-[#92400e]"><span class="material-symbols-outlined text-[16px] align-middle">visibility</span> What could change this decision?</p>' +
+          '<ul class="mt-2 space-y-1.5">' + r.watch.map(function (w) {
+            return '<li class="flex items-start gap-2 text-xs text-[#92400e]"><span class="material-symbols-outlined text-[14px] mt-0.5">arrow_right</span>' + w.text + '</li>';
+          }).join('') + '</ul></div></div></div></div>';
+        animateBars();
+      });
+    });
+  }
+
+  function gaugeHTML(label, sub) {
+    return '<div class="relative mx-auto w-[200px] h-[112px]">' +
+      '<svg viewBox="0 0 200 112" class="w-full h-full"><path d="M 20 104 A 80 80 0 0 1 180 104" fill="none" stroke="#ecebe4" stroke-width="14" stroke-linecap="round"/>' +
+      '<path d="M 20 104 A 80 80 0 0 1 180 104" fill="none" stroke="#f59e0b" stroke-width="14" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="263.9" class="gaugeArc"/></svg>' +
+      '<div class="absolute inset-x-0 bottom-0 text-center"><div class="font-display text-2xl font-extrabold" style="color:#d97706">' + label + '</div>' +
+      '<div class="text-xs text-[#7c857f]">' + sub + '</div></div></div>';
+  }
+
+  function animateBars() {
+    document.querySelectorAll('.bar span[data-w]').forEach(function (b) {
+      var w = b.getAttribute('data-w');
+      setTimeout(function () { b.style.width = w + '%'; }, 120);
+    });
+    setTimeout(function () {
+      document.querySelectorAll('.gaugeArc').forEach(function (g) {
+        g.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)';
+        g.style.strokeDashoffset = '132'; // ~50% medium
+      });
+    }, 150);
+  }
+
+  /* ==================== RISK (dashboard) ==================== */
+  function buildRiskCard(el) {
+    el.innerHTML = AIApp.skeleton({ rows: 4, h: 14 });
+    AgriIntel.getRiskAnalysis('onion').then(function (r) {
+      el.innerHTML =
+        '<div class="reveal card card-hover p-6 h-full">' +
+        '<div class="flex items-center justify-between"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Decision Risk</h3>' +
+        '<span class="pill pill-amber">' + r.overall + '</span></div>' +
+        '<div class="mt-2">' + gaugeHTML(r.overall, 'Overall risk') + '</div>' +
+        '<div class="mt-3 space-y-3.5">' +
+        r.breakdown.map(function (b) {
+          return '<div><div class="mb-1 flex items-center justify-between text-xs font-semibold text-[#46524b]">' +
+            '<span>' + b.label + '</span><span class="font-display font-bold text-[#0a3d27]">' + b.score + '%</span></div>' +
+            '<div class="bar"><span style="width:0%;background:' + (b.score > 30 ? '#d97706' : '#059669') + '" data-w="' + b.score + '"></span></div></div>';
+        }).join('') +
+        '</div><div class="mt-4 rounded-xl bg-amber-50 border border-amber-200 p-3">' +
+        '<p class="text-xs font-bold text-[#92400e]"><span class="material-symbols-outlined text-[14px] align-middle">warning</span> Watch triggers</p>' +
+        '<ul class="mt-1.5 space-y-1 text-[11px] text-[#92400e]">' +
+        r.watch.slice(0, 2).map(function (w) { return '<li>• ' + w.text + '</li>'; }).join('') +
+        '</ul></div>' +
+        '<button class="mt-3 w-full btn btn-ghost btn-sm" onclick="go(\'weather\')">Full risk breakdown</button>' +
+        '</div>';
+    });
+  }
+
+  /* ==================== CROP INTELLIGENCE VIEW ==================== */
+  var selectedCrop = 'onion';
+  function buildCropsView() {
+    var crops = AgriIntel.getCrops();
+    var keys = ['onion', 'tomato', 'soybean', 'wheat', 'cotton', 'maize'];
+    document.getElementById('cropGrid').innerHTML = keys.map(function (k) {
+      var c = crops[k];
+      var sel = k === selectedCrop;
+      return '<div class="reveal card card-hover p-5 ' + (sel ? 'ring-2 ring-[#0b5d38]' : '') + '" onclick="selectCrop(\'' + k + '\')">' +
+        '<div class="flex items-start justify-between">' +
+        '<div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl ' + (k === 'onion' ? 'bg-[#0b5d38] text-white' : 'bg-[#e2efe7] text-[#0b5d38]') + '">' +
+        '<span class="material-symbols-outlined text-[22px]">' + (k === 'onion' ? 'sprout' : k === 'tomato' ? 'trip_origin' : k === 'soybean' ? 'grass' : k === 'wheat' ? 'agriculture' : k === 'cotton' ? 'flaky' : 'eco') + '</span></span>' +
+        '<div><p class="font-display font-bold text-[#0a3d27]">' + c.name + '</p>' +
+        (k === 'onion' ? '<span class="pill pill-green mt-0.5">Recommended</span>' : '<span class="text-[11px] text-[#7c857f]">' + c.yield + ' q/acre</span>') + '</div></div>' +
+        '<span class="pill ' + AIApp.riskPillClass(c.risk) + '">' + c.risk + '</span></div>' +
+        '<div class="mt-4 grid grid-cols-2 gap-2 text-sm">' +
+        '<div class="rounded-lg bg-[#f6f5f0] px-3 py-2"><p class="text-[10px] text-[#7c857f]">Revenue</p><p class="font-bold text-[#0a3d27]">' + AIApp.inr(c.revenue) + '</p></div>' +
+        '<div class="rounded-lg bg-[#f6f5f0] px-3 py-2"><p class="text-[10px] text-[#7c857f]">Cost</p><p class="font-bold text-[#7c857f]">' + AIApp.inr(c.cost) + '</p></div>' +
+        '<div class="rounded-lg bg-emerald-50 px-3 py-2"><p class="text-[10px] text-emerald-700">Profit</p><p class="font-bold text-emerald-700">' + AIApp.inr(c.profit) + '</p></div>' +
+        '<div class="rounded-lg bg-[#f6f5f0] px-3 py-2"><p class="text-[10px] text-[#7c857f]">Confidence</p><p class="font-bold text-[#0a3d27]">' + c.confidence + '%</p></div>' +
+        '</div>' +
+        '<button class="mt-4 w-full btn ' + (k === 'onion' ? 'btn-primary' : 'btn-ghost') + ' btn-sm" onclick="event.stopPropagation();analyzeCrop(\'' + k + '\')">Analyze Crop</button>' +
+        '</div>';
+    }).join('');
+    showCropDetail();
+  }
+
+  function selectCrop(k) { selectedCrop = k; buildCropsView(); }
+  function analyzeCrop(k) { selectedCrop = k; buildCropsView(); document.getElementById('cropDetail').scrollIntoView({ behavior: 'smooth', block: 'center' }); AIApp.toast(AgriIntel.getCrops()[k].name + ' selected for analysis', 'success'); }
+
+  function showCropDetail() {
+    var c = AgriIntel.getCrops()[selectedCrop];
+    var isRec = selectedCrop === 'onion';
+    document.getElementById('cropDetail').innerHTML =
+      '<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">' +
+      '<div class="flex items-center gap-4"><span class="grid h-14 w-14 place-items-center rounded-2xl bg-[#0b5d38] text-white"><span class="material-symbols-outlined text-[30px]">sprout</span></span>' +
+      '<div><h3 class="font-display text-2xl font-extrabold text-[#0a3d27]">' + c.name + '</h3>' +
+      '<p class="text-xs text-[#7c857f]">' + (isRec ? 'Current AgriIntel recommendation' : 'Compared against current conditions') + '</p></div></div>' +
+      (isRec ? '<span class="pill pill-green"><span class="material-symbols-outlined text-[14px]">star</span> Best risk-adjusted option</span>' : '') +
+      '</div>' +
+      '<p class="mt-4 text-sm leading-relaxed text-[#46524b]">' + c.description + '</p>' +
+      '<div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">' +
+      '<div class="rounded-xl bg-[#f6f5f0] p-3.5"><p class="text-[11px] text-[#7c857f]">Expected Yield</p><p class="font-display text-lg font-bold text-[#0a3d27]">' + c.yieldMin + '–' + c.yieldMax + ' <span class="text-xs text-[#7c857f]">q/acre</span></p></div>' +
+      '<div class="rounded-xl bg-[#f6f5f0] p-3.5"><p class="text-[11px] text-[#7c857f]">Revenue</p><p class="font-display text-lg font-bold text-[#0a3d27]">' + AIApp.inr(c.revenue) + '</p></div>' +
+      '<div class="rounded-xl bg-[#f6f5f0] p-3.5"><p class="text-[11px] text-[#7c857f]">Cost</p><p class="font-display text-lg font-bold text-[#7c857f]">' + AIApp.inr(c.cost) + '</p></div>' +
+      '<div class="rounded-xl bg-emerald-50 p-3.5"><p class="text-[11px] text-emerald-700">Profit</p><p class="font-display text-lg font-bold text-emerald-700">' + AIApp.inr(c.profit) + '</p></div>' +
+      '<div class="rounded-xl bg-[#f6f5f0] p-3.5"><p class="text-[11px] text-[#7c857f]">Risk</p><p class="mt-1"><span class="pill ' + AIApp.riskPillClass(c.risk) + '">' + c.risk + '</span></p></div>' +
+      '<div class="rounded-xl bg-[#f6f5f0] p-3.5"><p class="text-[11px] text-[#7c857f]">Confidence</p><p class="font-display text-lg font-bold text-[#0a3d27]">' + c.confidence + '%</p></div>' +
+      '</div>' +
+      '<div class="mt-5 grid gap-3 sm:grid-cols-2">' +
+      '<div class="rounded-xl border border-[#e7e4dc] p-4"><p class="font-display text-sm font-bold text-[#0a3d27]">Why it fits</p><ul class="mt-2 space-y-1.5">' +
+      c.suitability.map(function (s) { return '<li class="flex items-start gap-2 text-xs text-[#46524b]"><span class="material-symbols-outlined text-[15px] text-emerald-600">check_circle</span>' + s + '</li>'; }).join('') +
+      '</ul></div>' +
+      '<div class="rounded-xl border border-[#e7e4dc] p-4"><p class="font-display text-sm font-bold text-[#0a3d27]">Market pulse</p><div id="cropMktSmall"></div></div>' +
+      '</div>';
+    AgriIntel.getMarketPrices(selectedCrop).then(function (m) {
+      var el = document.getElementById('cropMktSmall');
+      if (!el) return;
+      el.innerHTML = '<div class="mt-2"><div class="flex items-center justify-between text-xs"><span class="text-[#7c857f]">Current</span><span class="font-bold text-[#0a3d27]">₹' + AIApp.num(m.price) + '/q</span></div>' +
+        '<div class="mt-1.5 flex items-center justify-between text-xs"><span class="text-[#7c857f]">7-day</span><span class="font-bold ' + (m.change7d >= 0 ? 'text-emerald-700' : 'text-[#e11d48]') + '">' + AIApp.pct(m.change7d) + '</span></div>' +
+        '<div class="mt-1.5 flex items-center justify-between text-xs"><span class="text-[#7c857f]">Expected range</span><span class="font-bold text-[#0a3d27]">₹' + AIApp.num(m.expectedLow) + '–' + AIApp.num(m.expectedHigh) + '</span></div></div>';
+    });
+  }
+
+  /* ==================== MARKET VIEW ==================== */
+  function buildMarketView() {
+    var keys = ['onion', 'tomato', 'soybean', 'wheat', 'cotton', 'maize'];
+    var chipSkel = '';
+    for (var ci = 0; ci < 6; ci++) {
+      chipSkel += '<div class="reveal card p-4"><div class="shimmer-line" style="height:16px;width:55%"></div>' +
+        '<div class="mt-2 shimmer-line" style="height:20px;width:40%"></div>' +
+        '<div class="mt-2 shimmer-line" style="height:11px;width:70%"></div></div>';
+    }
+    document.getElementById('mktChips').innerHTML = chipSkel;
+    var all = Promise.all(keys.map(function (k) { return AgriIntel.getMarketPrices(k); }));
+    all.then(function (ms) {
+      document.getElementById('mktChips').innerHTML = ms.map(function (m) {
+        var up = m.change7d >= 0;
+        return '<div class="reveal card card-hover p-4 cursor-pointer" onclick="go(\'crops\')">' +
+          '<div class="flex items-center justify-between"><span class="font-display text-sm font-bold text-[#0a3d27]">' + m.name + '</span>' +
+          (m.name === 'Onion' ? '<span class="pill pill-green">Top pick</span>' : '') + '</div>' +
+          '<p class="mt-2 font-display text-xl font-extrabold text-[#0a3d27]">₹' + AIApp.num(m.price) + '<span class="text-xs font-semibold text-[#7c857f]">/q</span></p>' +
+          '<div class="mt-1 flex items-center justify-between text-xs">' +
+          '<span class="font-bold ' + (up ? 'text-emerald-700' : 'text-[#e11d48]') + '">' + AIApp.pct(m.change7d) + ' 7d</span>' +
+          '<span class="text-[#7c857f]">' + AIApp.pct(m.change30d) + ' 30d</span></div>' +
+          '</div>';
+      }).join('');
+    });
+    buildMarketCard(document.getElementById('mktChartCard'), 'mktChart');
+    buildSellCard(document.getElementById('sellCard'));
+  }
+
+  /* ==================== PROFIT SIMULATOR ==================== */
+  function buildSimulator(el, opts) {
+    var compact = opts && opts.compact;
+    var P = (opts && opts.prefix) || 'sim';
+    var crops = AgriIntel.getCrops();
+    var area = farm.area || 5;
+    el.innerHTML =
+      (compact ? '<div class="card card-hover reveal p-6"><div class="flex flex-wrap items-center justify-between gap-2"><div><h3 class="font-display text-lg font-bold text-[#0a3d27]">How Much Could I Earn?</h3>' +
+        '<p class="text-xs text-[#7c857f]">Simulate your profit instantly — or open the full simulator.</p></div>' +
+        '<button class="btn btn-ghost btn-sm" onclick="go(\'simulator\')">Full simulator</button></div>' : '') +
+      '<div class="grid gap-6 lg:grid-cols-2 ' + (compact ? 'mt-5' : '') + '">' +
+      '<div class="space-y-4">' +
+      '<div class="grid grid-cols-2 gap-4">' +
+      '<div class="field"><label>Crop</label><select class="select" id="' + P + 'Crop">' +
+      Object.keys(crops).map(function (k) { return '<option value="' + k + '"' + (k === (farm.crop || 'onion') ? ' selected' : '') + '>' + crops[k].name + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="field"><label>Land Area (' + farm.unit + ')</label><input class="input" id="' + P + 'Area" type="number" min="0.1" step="0.1" value="' + area + '"/></div>' +
+      '</div>' +
+      '<div class="grid grid-cols-2 gap-4">' +
+      '<div class="field"><label>Expected Yield (q/acre)</label><input class="input" id="' + P + 'Yield" type="number" value="92"/></div>' +
+      '<div class="field"><label>Selling Price (₹/q)</label><input class="input" id="' + P + 'Price" type="number" value="1650"/></div>' +
+      '</div>' +
+      '<div class="grid grid-cols-3 gap-4">' +
+      '<div class="field"><label>Input Cost</label><input class="input" id="' + P + 'Input" type="number" value="40000"/></div>' +
+      '<div class="field"><label>Labour Cost</label><input class="input" id="' + P + 'Labour" type="number" value="22000"/></div>' +
+      '<div class="field"><label>Transport</label><input class="input" id="' + P + 'Transport" type="number" value="12000"/></div>' +
+      '</div>' +
+      '<p class="text-[11px] text-[#7c857f]">Costs are per acre. Revenue = yield × selling price.</p>' +
+      '</div>' +
+      '<div>' +
+      '<div class="grid grid-cols-2 gap-3">' +
+      '<div class="rounded-xl border border-[#e7e4dc] p-4"><p class="text-[11px] text-[#7c857f]">Revenue</p><p class="font-display text-2xl font-extrabold text-[#0a3d27]" id="' + P + 'Rev">₹1.52L</p></div>' +
+      '<div class="rounded-xl border border-[#e7e4dc] p-4"><p class="text-[11px] text-[#7c857f]">Total Cost</p><p class="font-display text-2xl font-extrabold text-[#7c857f]" id="' + P + 'Cost">₹74K</p></div>' +
+      '<div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4"><p class="text-[11px] text-emerald-700">Profit</p><p class="font-display text-2xl font-extrabold text-emerald-700" id="' + P + 'Profit">₹78K</p></div>' +
+      '<div class="rounded-xl border border-[#e7e4dc] p-4"><p class="text-[11px] text-[#7c857f]">Profit / Acre</p><p class="font-display text-2xl font-extrabold text-[#0a3d27]" id="' + P + 'PerAcre">₹78K</p></div>' +
+      '</div>' +
+      '<div class="mt-4 rounded-xl bg-[#fbf7ed] border border-[#e7e4dc] p-4">' +
+      '<p class="font-display text-sm font-bold text-[#0a3d27]">Scenario outlook</p>' +
+      '<div class="mt-3 space-y-2" id="' + P + 'Scenarios"></div>' +
+      '</div>' +
+      '</div>' +
+      '</div>' + (compact ? '</div>' : '') +
+      '<div class="card mt-6 p-6"><h3 class="font-display text-lg font-bold text-[#0a3d27]">Profit Scenarios</h3>' +
+      '<p class="mt-1 text-xs text-[#7c857f]">Best, expected and worst case for this crop — based on your current inputs.</p>' +
+      '<div class="mt-5" id="' + P + 'Chart"></div></div>';
+
+    var inputs = [P + 'Crop', P + 'Area', P + 'Yield', P + 'Price', P + 'Input', P + 'Labour', P + 'Transport'];
+    inputs.forEach(function (id) {
+      var node = document.getElementById(id);
+      node.addEventListener('input', function () { updateSim(P); });
+      node.addEventListener('change', function () { updateSim(P); });
+    });
+    updateSim(P);
+  }
+
+  function updateSim(P) {
+    P = P || 'sim';
+    var get = function (id) { var el = document.getElementById(P + id); return el ? parseFloat(el.value) || 0 : 0; };
+    var cropKey = (document.getElementById(P + 'Crop') || {}).value || 'onion';
+    var area = get('Area') || 1;
+    var y = get('Yield') || 92;
+    var p = get('Price') || 1650;
+    var cost = get('Input') + get('Labour') + get('Transport');
+    var rev = y * p;
+    var profit = rev - cost;
+    var elRev = document.getElementById(P + 'Rev');
+    var elCost = document.getElementById(P + 'Cost');
+    var elProfit = document.getElementById(P + 'Profit');
+    var elPer = document.getElementById(P + 'PerAcre');
+    if (elRev) elRev.textContent = AIApp.inr(rev * area);
+    if (elCost) elCost.textContent = AIApp.inr(cost * area);
+    if (elProfit) elProfit.textContent = AIApp.inr(profit * area);
+    if (elPer) elPer.textContent = AIApp.inr(profit);
+
+    var scenarios = [
+      { label: 'Best Case', v: (y * 1.033) * (p * 1.242) - (cost * 1.216), tone: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
+      { label: 'Expected', v: profit, tone: 'text-[#0a3d27]', bg: 'bg-white border-[#e7e4dc]' },
+      { label: 'Worst Case', v: (y * 0.815) * (p * 0.939) - (cost * 1.003), tone: 'text-[#e11d48]', bg: 'bg-red-50 border-red-200' }
+    ];
+    var sc = document.getElementById(P + 'Scenarios');
+    if (sc) sc.innerHTML = scenarios.map(function (s) {
+      return '<div class="flex items-center justify-between rounded-lg border px-3 py-2.5 ' + s.bg + '">' +
+        '<span class="text-xs font-bold text-[#46524b]">' + s.label + '</span>' +
+        '<span class="font-display font-extrabold ' + s.tone + '">' + AIApp.inr(s.v * area) + '</span></div>';
+    }).join('');
+
+    // scenario bar chart
+    var max = Math.max(scenarios[0].v, scenarios[1].v, scenarios[2].v, 1);
+    var chart = document.getElementById(P + 'Chart');
+    if (chart) chart.innerHTML = '<div class="space-y-4">' + scenarios.map(function (s) {
+      var w = Math.max((s.v / max) * 100, 2);
+      return '<div class="flex items-center gap-3"><span class="w-20 text-xs font-semibold text-[#7c857f]">' + s.label + '</span>' +
+        '<div class="bar flex-1"><span style="width:0%;background:' + (s.label === 'Best Case' ? '#059669' : s.label === 'Expected' ? '#0b5d38' : '#e11d48') + '" data-w="' + w + '"></span></div>' +
+        '<span class="w-20 text-right font-display text-sm font-bold ' + s.tone + '">' + AIApp.inr(s.v * area) + '</span></div>';
+    }).join('') + '</div>';
+    setTimeout(function () {
+      chart.querySelectorAll('span[data-w]').forEach(function (b) { b.style.width = b.getAttribute('data-w') + '%'; });
+    }, 80);
+  }
+
+  /* ==================== MY FARM VIEW ==================== */
+  function buildFarmView() {
+    var cards = [
+      { icon: 'location_on', cls: 'bg-emerald-50 text-emerald-700', label: 'Location', value: farm.village + ', ' + farm.district + ', ' + farm.state },
+      { icon: 'landscape', cls: 'bg-amber-50 text-amber-700', label: 'Land Area', value: farm.area + ' ' + farm.unit + (farm.unit === 'Acre' ? ' (~' + (farm.area * 0.4047).toFixed(2) + ' ha)' : ' (~' + (farm.area * 2.471).toFixed(2) + ' ac)') },
+      { icon: 'texture', cls: 'bg-[#f1f0ea] text-[#7c5c2b]', label: 'Soil Type', value: farm.soil },
+      { icon: 'water_drop', cls: 'bg-sky-50 text-[#0284c7]', label: 'Irrigation', value: farm.irrigation },
+      { icon: 'water', cls: 'bg-sky-50 text-[#0284c7]', label: 'Water Availability', value: farm.water },
+      { icon: 'sprout', cls: 'bg-emerald-50 text-emerald-700', label: 'Current Crop', value: AgriIntel.getCrops()[(farm.crop || 'onion')] ? AgriIntel.getCrops()[farm.crop].name : 'Onion' },
+      { icon: 'grass', cls: 'bg-[#f1f0ea] text-[#46524b]', label: 'Previous Crop', value: farm.previousCrop },
+      { icon: 'handyman', cls: 'bg-[#f1f0ea] text-[#46524b]', label: 'Machinery', value: (farm.machinery || []).join(', ') || 'None' }
+    ];
+    document.getElementById('farmCards').innerHTML = cards.map(function (c) {
+      return '<div class="reveal card card-hover p-5 flex items-start gap-4">' +
+        '<span class="grid h-11 w-11 flex-shrink-0 place-items-center rounded-xl ' + c.cls + '"><span class="material-symbols-outlined text-[22px]">' + c.icon + '</span></span>' +
+        '<div><p class="text-[11px] font-semibold uppercase tracking-wider text-[#7c857f]">' + c.label + '</p>' +
+        '<p class="mt-1 font-display font-bold text-[#0a3d27]">' + c.value + '</p></div></div>';
+    }).join('');
+
+    // fill edit form
+    document.getElementById('eVillage').value = farm.village;
+    document.getElementById('eDistrict').value = farm.district;
+    document.getElementById('eState').value = farm.state;
+    document.getElementById('eArea').value = farm.area;
+    document.getElementById('eSoil').innerHTML = ['Black Soil', 'Red Soil', 'Alluvial Soil', 'Laterite Soil', 'Sandy Soil', 'Clay Soil', 'Loamy Soil']
+      .map(function (s) { return '<option' + (s === farm.soil ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    document.getElementById('eIrr').innerHTML = ['Drip', 'Sprinkler', 'Flood', 'Rain-fed']
+      .map(function (s) { return '<option' + (s === farm.irrigation ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    document.getElementById('eWater').value = farm.water;
+    document.getElementById('ePrev').innerHTML = ['Soybean', 'Cotton', 'Wheat', 'Rice', 'Onion', 'Chickpea', 'Tomato', 'None / Fallow']
+      .map(function (s) { return '<option' + (s === farm.previousCrop ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+  }
+
+  function toggleEditFarm() {
+    var f = document.getElementById('farmEditForm');
+    f.classList.toggle('hidden');
+    document.getElementById('editBtnLabel').textContent = f.classList.contains('hidden') ? 'Edit Farm' : 'Close';
+    if (!f.classList.contains('hidden')) f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function saveFarmEdit() {
+    farm.village = document.getElementById('eVillage').value.trim() || farm.village;
+    farm.district = document.getElementById('eDistrict').value.trim() || farm.district;
+    farm.state = document.getElementById('eState').value.trim() || farm.state;
+    farm.area = parseFloat(document.getElementById('eArea').value) || farm.area;
+    farm.soil = document.getElementById('eSoil').value;
+    farm.irrigation = document.getElementById('eIrr').value;
+    farm.water = document.getElementById('eWater').value;
+    farm.previousCrop = document.getElementById('ePrev').value;
+    AgriIntel.saveFarm(farm);
+    applyFarm(); buildFarmView();
+    document.getElementById('farmEditForm').classList.add('hidden');
+    document.getElementById('editBtnLabel').textContent = 'Edit Farm';
+    AIApp.toast('Farm profile updated', 'success');
+  }
+
+  /* ==================== SETTINGS VIEW ==================== */
+  function buildSettingsView() {
+    var toggles = [
+      { label: 'Weather alerts', desc: 'Rain, frost and pest risk warnings for your district', on: true },
+      { label: 'Market price alerts', desc: 'Notify when onion crosses your target price', on: true },
+      { label: 'Weekly intelligence digest', desc: 'A short summary of your farm every Monday', on: false },
+      { label: 'Hindi / Marathi interface', desc: 'Show the app in your preferred language', on: false }
+    ];
+    document.getElementById('settingsGrid').innerHTML = toggles.map(function (t) {
+      return '<div class="reveal card card-hover p-5 flex items-center justify-between gap-4">' +
+        '<div><p class="font-display font-bold text-[#0a3d27]">' + t.label + '</p><p class="mt-0.5 text-xs text-[#7c857f]">' + t.desc + '</p></div>' +
+        '<div class="toggle' + (t.on ? ' on' : '') + '" onclick="this.classList.toggle(\'on\')"></div></div>';
+    }).join('');
+
+    document.getElementById('aboutCard').innerHTML =
+      '<div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">' +
+      '<div class="flex items-center gap-4"><span class="grid h-14 w-14 place-items-center rounded-2xl bg-[#0b5d38] text-white"><span class="material-symbols-outlined text-[30px] filled">sprout</span></span>' +
+      '<div><p class="font-display text-lg font-extrabold text-[#0a3d27]">AGRIINTEL</p>' +
+      '<p class="text-xs text-[#7c857f]">Smarter Decisions. Better Harvests.</p>' +
+      '<p class="mt-1 text-xs text-[#7c857f]">Version 1.0 · MVP demo build</p></div></div>' +
+      '<div class="flex gap-3">' +
+      '<button class="btn btn-ghost btn-sm" onclick="AIApp.toast(\'Help centre coming soon\')">Help</button>' +
+      '<button class="btn btn-ghost btn-sm" onclick="resetDemo()"><span class="material-symbols-outlined text-[16px]">restart_alt</span> Reset demo</button>' +
+      '</div></div>' +
+      '<div class="mt-5 rounded-xl bg-[#f6f5f0] p-4 text-xs leading-relaxed text-[#7c857f]">' +
+      'AgriIntel is an AI-powered decision-support platform. This MVP uses realistic mock data to demonstrate the product. ' +
+      'The architecture is API-ready — weather, market, soil and yield-model services can be connected without changing the interface.</div>';
+  }
+  function resetDemo() {
+    localStorage.removeItem('agrintelFarm');
+    AIApp.toast('Demo data reset', 'success');
+    setTimeout(function () { window.location.reload(); }, 600);
+  }
+
+  /* ==================== INIT ==================== */
+  buildNav();
+  applyFarm();
+  buildDashboard();
+  buildCropsView();
+  buildMarketView();
+  buildWeatherView();
+  buildFarmView();
+  buildSettingsView();
+  buildSimulator(document.getElementById('simFull'), { prefix: 'simf' });
+  AIApp.initReveal();
+  go('dashboard');
+
+  window.addEventListener('resize', function () {
+    if (window.innerWidth >= 1024) toggleSidebar(false);
+  });
+  window.go = go;
+  window.toggleSidebar = toggleSidebar;
+  window.openMore = openMore;
+  window.closeMore = closeMore;
+  window.openSellModal = openSellModal;
+  window.closeSellModal = closeSellModal;
+  window.toggleEditFarm = toggleEditFarm;
+  window.saveFarmEdit = saveFarmEdit;
+  window.selectCrop = selectCrop;
+  window.analyzeCrop = analyzeCrop;
+  window.resetDemo = resetDemo;
+</script>
+</body>
+</html>

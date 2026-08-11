@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="AgriIntel — 2-minute farm analysis. Tell us about your soil, weather, market and crops to get a profit-and-risk plan in under two minutes."/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b5d38'/%3E%3Cpath d='M12 18c-3.3 0-6-2.7-6-6V6h6c3.3 0 6 2.7 6 6s-2.7 6-6 6z' fill='%23a7f3d0'/%3E%3Cpath d='M12 18V6' stroke='%23fff' stroke-width='1.4'/%3E%3C/svg%3E"/>
+  <title>AGRIINTEL — Farm Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'Noto Sans', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'], display: ['Inter', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'] } } } };</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./agrintel.css"/>
+  <script src="./agrintel-core.js"></script>
+  <script src="./agrintel-app.js"></script>
+  <style>
+    .wizard-panel { display: none; animation: aiFadeUp .45s cubic-bezier(0.22,1,0.36,1); }
+    .wizard-panel.active { display: block; }
+    .loc-btn { transition: all .2s ease; }
+    .loc-btn:active { transform: scale(.96); }
+  </style>
+</head>
+<body class="app-bg min-h-screen">
+
+<!-- Top bar -->
+<header class="sticky top-0 z-40 border-b border-[#e7e4dc] bg-white/85 backdrop-blur-xl">
+  <div class="mx-auto flex max-w-3xl items-center justify-between px-5 py-3.5">
+    <a href="./index.html" class="flex items-center gap-2.5">
+      <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#0b5d38] text-white"><span class="material-symbols-outlined text-[18px] filled">sprout</span></span>
+      <span class="font-display text-base font-extrabold tracking-tight text-[#0a3d27]">AGRIINTEL</span>
+    </a>
+    <span class="pill pill-brand">Farm Analysis</span>
+  </div>
+</header>
+
+<main class="mx-auto max-w-3xl px-5 py-8 sm:py-12">
+  <!-- Step indicator -->
+  <div class="mb-10">
+    <div class="steps" id="stepBar">
+      <button class="step-dot" data-step="1" onclick="goStep(1)">1</button><span class="step-line" id="line1"></span>
+      <button class="step-dot" data-step="2" onclick="goStep(2)">2</button><span class="step-line" id="line2"></span>
+      <button class="step-dot" data-step="3" onclick="goStep(3)">3</button><span class="step-line" id="line3"></span>
+      <button class="step-dot" data-step="4" onclick="goStep(4)">4</button><span class="step-line" id="line4"></span>
+      <button class="step-dot" data-step="5" onclick="goStep(5)">5</button>
+    </div>
+    <div class="mt-3 flex justify-between px-1">
+      <span class="font-display text-xs font-bold text-[#0a3d27]" id="stepLabel">01 · Farm</span>
+      <span class="text-xs text-[#7c857f]" id="stepSub">Where is your farm?</span>
+    </div>
+  </div>
+
+  <!-- ============ STEP 1 : FARM LOCATION ============ -->
+  <section class="wizard-panel active" id="panel-1">
+    <div class="card p-6 sm:p-8">
+      <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Where is your farm?</h2>
+      <p class="mt-1.5 text-sm text-[#7c857f]">Location powers weather, soil and market intelligence for your exact region.</p>
+      <div class="mt-7 space-y-5">
+        <div class="field">
+          <label>State</label>
+          <select class="select" id="fState">
+            <option value="">Select state</option>
+            <option>Maharashtra</option><option>Madhya Pradesh</option><option>Uttar Pradesh</option>
+            <option>Karnataka</option><option>Gujarat</option><option>Rajasthan</option>
+            <option>Punjab</option><option>Telangana</option><option>Andhra Pradesh</option><option>Tamil Nadu</option>
+          </select>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div class="field">
+            <label>District</label>
+            <select class="select" id="fDistrict"><option value="">Select district</option><option>Nagpur</option><option>Wardha</option><option>Amravati</option><option>Akola</option><option>Yavatmal</option><option>Buldhana</option><option>Washim</option></select>
+          </div>
+          <div class="field">
+            <label>Village / Taluka</label>
+            <input class="input" id="fVillage" placeholder="e.g. Savner, Kalamna"/>
+          </div>
+        </div>
+        <button class="loc-btn inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#0b5d38]/40 bg-[#e2efe7]/60 px-4 py-3.5 text-sm font-bold text-[#0b5d38] hover:bg-[#d6e8dd]" onclick="useMyLocation()">
+          <span class="material-symbols-outlined text-[18px] filled">my_location</span>
+          Use My Location
+        </button>
+        <div id="locPreview" class="hidden items-center gap-3 rounded-xl border border-[#d8e6dd] bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <span class="material-symbols-outlined text-[18px]">location_on</span>
+          <span><b id="locVillage">Savner</b>, <span id="locDistrict">Nagpur</span>, <span id="locState">Maharashtra</span>, India</span>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 flex justify-end">
+      <button class="btn btn-primary btn-lg" onclick="nextStep()">Continue <span class="material-symbols-outlined">arrow_forward</span></button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 2 : SOIL ============ -->
+  <section class="wizard-panel" id="panel-2">
+    <div class="card p-6 sm:p-8">
+      <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">What type of soil do you have?</h2>
+      <p class="mt-1.5 text-sm text-[#7c857f]">Tap the soil type that matches your farm. You can refine nutrient values below.</p>
+      <div class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" id="soilGrid"></div>
+
+      <!-- Soil health card -->
+      <div id="soilHealth" class="mt-6 hidden rounded-2xl border border-[#e7e4dc] bg-[#fbf7ed] p-5">
+        <div class="flex items-center justify-between">
+          <p class="font-display text-sm font-bold text-[#0a3d27]">Soil Health Card</p>
+          <span class="pill pill-green" id="soilScore">Good</span>
+        </div>
+        <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div><div class="mb-1 flex justify-between text-[11px] font-medium text-[#7c857f]"><span>pH <span id="phVal" class="text-[#0a3d27]">7.1</span></span><span>Slightly alkaline</span></div><div class="bar"><span style="width:55%;background:#059669"></span></div></div>
+          <div><div class="mb-1 flex justify-between text-[11px] font-medium text-[#7c857f]"><span>Nitrogen (N) <span id="nVal" class="text-[#0a3d27]">52</span> kg/ha</span><span>Medium</span></div><div class="bar"><span style="width:52%;background:#f59e0b"></span></div></div>
+          <div><div class="mb-1 flex justify-between text-[11px] font-medium text-[#7c857f]"><span>Phosphorus (P) <span id="pVal" class="text-[#0a3d27]">24</span> kg/ha</span><span>Medium</span></div><div class="bar"><span style="width:40%;background:#f59e0b"></span></div></div>
+          <div><div class="mb-1 flex justify-between text-[11px] font-medium text-[#7c857f]"><span>Potassium (K) <span id="kVal" class="text-[#0a3d27]">38</span> kg/ha</span><span>Medium</span></div><div class="bar"><span style="width:55%;background:#f59e0b"></span></div></div>
+          <div class="sm:col-span-2"><div class="mb-1 flex justify-between text-[11px] font-medium text-[#7c857f]"><span>Organic Carbon <span id="ocVal" class="text-[#0a3d27]">0.6</span>%</span><span>Healthy</span></div><div class="bar"><span style="width:60%;background:#059669"></span></div></div>
+        </div>
+        <p class="mt-4 text-[11px] text-[#7c857f]">Optional — adjust the sliders if you have a lab report.</p>
+      </div>
+    </div>
+    <div class="mt-6 flex items-center justify-between">
+      <button class="btn btn-ghost" onclick="prevStep()"><span class="material-symbols-outlined">arrow_back</span> Back</button>
+      <button class="btn btn-primary btn-lg" onclick="nextStep()">Continue <span class="material-symbols-outlined">arrow_forward</span></button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 3 : FARM DETAILS ============ -->
+  <section class="wizard-panel" id="panel-3">
+    <div class="card p-6 sm:p-8">
+      <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">Tell us about your farm</h2>
+      <p class="mt-1.5 text-sm text-[#7c857f]">These details refine yield and cost estimates.</p>
+      <div class="mt-7 space-y-6">
+        <div class="field">
+          <label>Land Area</label>
+          <div class="flex items-center gap-3">
+            <input class="input w-32" id="fArea" type="number" value="5" min="0.1" step="0.1"/>
+            <div class="flex rounded-xl border border-[#e7e4dc] bg-[#f6f5f0] p-1">
+              <button class="rounded-lg px-4 py-2 text-sm font-bold text-white bg-[#0b5d38]" id="unitAcre" onclick="setUnit('Acre')">Acre</button>
+              <button class="rounded-lg px-4 py-2 text-sm font-bold text-[#7c857f]" id="unitHectare" onclick="setUnit('Hectare')">Hectare</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="mb-2 font-ui text-xs font-semibold text-[#46524b]">Irrigation</p>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4" id="irrGrid"></div>
+        </div>
+        <div>
+          <p class="mb-2 font-ui text-xs font-semibold text-[#46524b]">Water Availability</p>
+          <div class="grid grid-cols-3 gap-3" id="waterGrid"></div>
+        </div>
+        <div class="field">
+          <label>Previous Crop</label>
+          <select class="select" id="fPrevCrop"><option>Soybean</option><option>Cotton</option><option>Wheat</option><option>Rice</option><option>Onion</option><option>Chickpea</option><option>Tomato</option><option>None / Fallow</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 flex items-center justify-between">
+      <button class="btn btn-ghost" onclick="prevStep()"><span class="material-symbols-outlined">arrow_back</span> Back</button>
+      <button class="btn btn-primary btn-lg" onclick="nextStep()">Continue <span class="material-symbols-outlined">arrow_forward</span></button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 4 : CROP ============ -->
+  <section class="wizard-panel" id="panel-4">
+    <div class="card p-6 sm:p-8">
+      <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">What are you planning to grow?</h2>
+      <p class="mt-1.5 text-sm text-[#7c857f]">Choose a crop, or let AgriIntel recommend the best option for your farm.</p>
+
+      <button class="mt-6 w-full rounded-2xl border-2 border-[#0b5d38] bg-gradient-to-br from-[#e2efe7] to-[#f3faf6] p-5 text-left transition-all hover:shadow-md active:scale-[0.99]" id="cropRecommend" onclick="pickCrop('recommended')">
+        <div class="flex items-center gap-4">
+          <span class="grid h-12 w-12 flex-shrink-0 place-items-center rounded-2xl bg-[#0b5d38] text-white shadow-md shadow-emerald-900/20"><span class="material-symbols-outlined text-[26px] filled">auto_awesome</span></span>
+          <div class="flex-1">
+            <p class="font-display text-base font-extrabold text-[#0a3d27]">Let AgriIntel Recommend</p>
+            <p class="mt-0.5 text-xs text-[#46524b]">AI picks the crop with the best risk-adjusted profit for your soil and market.</p>
+          </div>
+          <span class="pill pill-green">Best match</span>
+        </div>
+        <div class="mt-3 hidden h-1 rounded-full bg-white" id="cropRecBar"><span class="block h-full w-full rounded-full bg-[#0b5d38]"></span></div>
+      </button>
+
+      <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3" id="cropGrid"></div>
+    </div>
+    <div class="mt-6 flex items-center justify-between">
+      <button class="btn btn-ghost" onclick="prevStep()"><span class="material-symbols-outlined">arrow_back</span> Back</button>
+      <button class="btn btn-primary btn-lg" onclick="nextStep()">Continue <span class="material-symbols-outlined">arrow_forward</span></button>
+    </div>
+  </section>
+
+  <!-- ============ STEP 5 : RESOURCES ============ -->
+  <section class="wizard-panel" id="panel-5">
+    <div class="card p-6 sm:p-8">
+      <h2 class="font-display text-2xl font-extrabold text-[#0a3d27]">What resources are available?</h2>
+      <p class="mt-1.5 text-sm text-[#7c857f]">Budget estimates make the profit forecast realistic.</p>
+      <div class="mt-7 grid gap-5 sm:grid-cols-2">
+        <div class="field"><label>Seed Budget (₹)</label><input class="input" id="fSeed" type="number" value="12000"/></div>
+        <div class="field"><label>Fertilizer Budget (₹)</label><input class="input" id="fFert" type="number" value="25000"/></div>
+        <div class="field"><label>Labour Availability</label><select class="select" id="fLabour"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+        <div class="field"><label>Transportation</label><select class="select" id="fTransport"><option>Own vehicle</option><option>Shared / village truck</option><option>Hire at mandi</option><option>None</option></select></div>
+        <div class="sm:col-span-2">
+          <p class="mb-2 font-ui text-xs font-semibold text-[#46524b]">Machinery available</p>
+          <div class="flex flex-wrap gap-2" id="machGrid">
+            <button class="mach-chip selected" onclick="toggleMach(this)">Tractor</button>
+            <button class="mach-chip" onclick="toggleMach(this)">Cultivator</button>
+            <button class="mach-chip" onclick="toggleMach(this)">Seed drill</button>
+            <button class="mach-chip" onclick="toggleMach(this)">Sprayer</button>
+            <button class="mach-chip" onclick="toggleMach(this)">Harvester</button>
+            <button class="mach-chip" onclick="toggleMach(this)">None</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 flex items-center justify-between">
+      <button class="btn btn-ghost" onclick="prevStep()"><span class="material-symbols-outlined">arrow_back</span> Back</button>
+      <button class="btn btn-amber btn-lg" onclick="runAnalysis()"><span class="material-symbols-outlined">analytics</span> Analyze My Farm</button>
+    </div>
+  </section>
+</main>
+
+<!-- ============ LOADING OVERLAY ============ -->
+<div id="loadingOverlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-[#062a1d]">
+  <div class="w-full max-w-md px-6 text-center">
+    <div class="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl bg-white/10">
+      <span class="material-symbols-outlined text-[36px] filled text-emerald-300 ai-float">neurology</span>
+    </div>
+    <h3 class="font-display text-2xl font-extrabold text-white">Analyzing your farm...</h3>
+    <p class="mt-1 text-sm text-white/50">Running the AgriIntel decision engine</p>
+    <div class="mt-8 space-y-3 text-left">
+      <div id="loadItems" class="space-y-3"></div>
+    </div>
+    <div class="bar mt-8 bg-white/10"><span id="loadBar" class="block h-full w-0 rounded-full" style="background:#10b981; transition:width .5s ease"></span></div>
+  </div>
+</div>
+
+<script>
+  var SOILS = [
+    { k: 'Black Soil', icon: 'texture', tone: '#4a3526' },
+    { k: 'Red Soil', icon: 'terrain', tone: '#b45309' },
+    { k: 'Alluvial Soil', icon: 'layers', tone: '#7c5c2b' },
+    { k: 'Laterite Soil', icon: 'landscape', tone: '#9a3412' },
+    { k: 'Sandy Soil', icon: 'grain', tone: '#ca8a04' },
+    { k: 'Clay Soil', icon: 'water', tone: '#374151' },
+    { k: 'Loamy Soil', icon: 'eco', tone: '#3f6212' }
+  ];
+  var IRR = [
+    { k: 'Drip', icon: 'water_drop' }, { k: 'Sprinkler', icon: 'water' },
+    { k: 'Flood', icon: 'waves' }, { k: 'Rain-fed', icon: 'rainy' }
+  ];
+  var CROPS = [
+    { k: 'onion', name: 'Onion', icon: 'circle' }, { k: 'tomato', name: 'Tomato', icon: 'trip_origin' },
+    { k: 'soybean', name: 'Soybean', icon: 'grass' }, { k: 'wheat', name: 'Wheat', icon: 'agriculture' },
+    { k: 'rice', name: 'Rice', icon: 'water_drop' }, { k: 'cotton', name: 'Cotton', icon: 'flaky' },
+    { k: 'maize', name: 'Maize', icon: 'eco' }, { k: 'potato', name: 'Potato', icon: 'crop' },
+    { k: 'chickpea', name: 'Chickpea', icon: 'nutrition' }
+  ];
+
+  var state = { step: 1, soil: 'Black Soil', irrigation: 'Drip', water: 'Medium', crop: 'recommended', unit: 'Acre', machinery: ['Tractor'] };
+
+  function renderPickers() {
+    // Soil
+    var soilHtml = SOILS.map(function (s) {
+      return '<div class="opt' + (s.k === state.soil ? ' selected' : '') + '" onclick="pickSoil(\'' + s.k + '\')">' +
+        '<span class="opt-check"></span>' +
+        '<span class="opt-icon" style="background:' + s.tone + '22;color:' + s.tone + '"><span class="material-symbols-outlined text-[22px]">' + s.icon + '</span></span>' +
+        '<span class="opt-name">' + s.k + '</span></div>';
+    }).join('');
+    document.getElementById('soilGrid').innerHTML = soilHtml;
+    // Irrigation
+    document.getElementById('irrGrid').innerHTML = IRR.map(function (i) {
+      return '<div class="opt' + (i.k === state.irrigation ? ' selected' : '') + '" onclick="pickIrr(\'' + i.k + '\')">' +
+        '<span class="opt-check"></span><span class="opt-icon"><span class="material-symbols-outlined text-[22px]">' + i.icon + '</span></span>' +
+        '<span class="opt-name">' + i.k + '</span></div>';
+    }).join('');
+    // Water
+    document.getElementById('waterGrid').innerHTML = ['High', 'Medium', 'Low'].map(function (w) {
+      var tone = w === 'High' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : w === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-600 border-red-200';
+      var sel = w === state.water ? 'ring-2 ring-[#0b5d38] border-transparent' : '';
+      return '<div class="cursor-pointer rounded-xl border px-3 py-3 text-center font-display text-sm font-bold ' + tone + ' ' + sel + '" onclick="pickWater(\'' + w + '\')">' + w + '</div>';
+    }).join('');
+    // Crops
+    document.getElementById('cropGrid').innerHTML = CROPS.map(function (c) {
+      return '<div class="opt' + (state.crop === c.k ? ' selected' : '') + '" onclick="pickCrop(\'' + c.k + '\')">' +
+        '<span class="opt-check"></span><span class="opt-icon"><span class="material-symbols-outlined text-[22px]">' + c.icon + '</span></span>' +
+        '<span class="opt-name">' + c.name + '</span></div>';
+    }).join('');
+    // recommend highlight
+    var rec = document.getElementById('cropRecommend');
+    if (state.crop === 'recommended') rec.style.borderColor = '#0b5d38';
+    else rec.style.borderColor = '#d8d6cd';
+    document.getElementById('cropRecBar').style.display = state.crop === 'recommended' ? 'block' : 'none';
+    // unit
+    updateUnitUI();
+  }
+
+  function pickSoil(k) { state.soil = k; renderPickers(); }
+  function pickIrr(k) { state.irrigation = k; renderPickers(); }
+  function pickWater(k) { state.water = k; renderPickers(); }
+  function pickCrop(k) { state.crop = k; renderPickers(); }
+  function setUnit(u) { state.unit = u; updateUnitUI(); }
+  function updateUnitUI() {
+    var a = document.getElementById('unitAcre'), h = document.getElementById('unitHectare');
+    if (state.unit === 'Acre') { a.className = 'rounded-lg px-4 py-2 text-sm font-bold text-white bg-[#0b5d38]'; h.className = 'rounded-lg px-4 py-2 text-sm font-bold text-[#7c857f]'; }
+    else { h.className = 'rounded-lg px-4 py-2 text-sm font-bold text-white bg-[#0b5d38]'; a.className = 'rounded-lg px-4 py-2 text-sm font-bold text-[#7c857f]'; }
+  }
+  function toggleMach(btn) {
+    var t = btn.textContent.trim();
+    var none = t === 'None';
+    if (none) { state.machinery = ['None']; }
+    else {
+      state.machinery = state.machinery.filter(function (m) { return m !== 'None'; });
+      var i = state.machinery.indexOf(t);
+      if (i >= 0) state.machinery.splice(i, 1); else state.machinery.push(t);
+      if (state.machinery.length === 0) state.machinery = ['None'];
+    }
+    document.querySelectorAll('.mach-chip').forEach(function (c) {
+      var val = c.textContent.trim();
+      c.classList.toggle('selected', state.machinery.indexOf(val) >= 0 || (val === 'None' && state.machinery.indexOf('None') >= 0));
+    });
+  }
+
+  var STEPS = [
+    { n: '01 · Farm', s: 'Where is your farm?' },
+    { n: '02 · Soil', s: 'What type of soil do you have?' },
+    { n: '03 · Farm', s: 'Tell us about your farm' },
+    { n: '04 · Crop', s: 'What are you planning to grow?' },
+    { n: '05 · Analysis', s: 'Check your resources and analyze' }
+  ];
+  function refreshStep() {
+    document.querySelectorAll('.step-dot').forEach(function (d) {
+      var s = parseInt(d.getAttribute('data-step'), 10);
+      d.className = 'step-dot' + (s === state.step ? ' active' : s < state.step ? ' done' : '');
+      if (s < state.step) d.innerHTML = '<span class="material-symbols-outlined text-[15px]">check</span>';
+      else d.innerHTML = s;
+    });
+    for (var i = 1; i <= 4; i++) document.getElementById('line' + i).className = 'step-line' + (i < state.step ? ' done' : '');
+    document.getElementById('stepLabel').textContent = STEPS[state.step - 1].n;
+    document.getElementById('stepSub').textContent = STEPS[state.step - 1].s;
+    document.querySelectorAll('.wizard-panel').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('panel-' + state.step).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goStep(s) {
+    if (s < state.step) { state.step = s; refreshStep(); return; }
+    // forward jumps only allowed sequentially through validation
+    if (s === state.step + 1) { validateStep(state.step) && nextStep(); }
+  }
+
+  function validateStep(s) {
+    if (s === 1) {
+      if (!document.getElementById('fState').value || !document.getElementById('fDistrict').value || !document.getElementById('fVillage').value.trim()) {
+        AIApp.toast('Please fill state, district and village (or use My Location).', 'error'); return false;
+      }
+    }
+    return true;
+  }
+  function nextStep() {
+    if (!validateStep(state.step)) return;
+    if (state.step < 5) { state.step++; refreshStep(); }
+  }
+  function prevStep() { if (state.step > 1) { state.step--; refreshStep(); } }
+
+  function useMyLocation() {
+    document.getElementById('fState').value = 'Maharashtra';
+    document.getElementById('fDistrict').value = 'Nagpur';
+    document.getElementById('fVillage').value = 'Savner';
+    var pv = document.getElementById('locPreview');
+    pv.classList.remove('hidden'); pv.classList.add('flex');
+    document.getElementById('locVillage').textContent = 'Savner';
+    document.getElementById('locDistrict').textContent = 'Nagpur';
+    document.getElementById('locState').textContent = 'Maharashtra';
+    AIApp.toast('Location set to Nagpur, Maharashtra (mock).', 'success');
+  }
+
+  /* ---------- ANALYSIS LOADING ---------- */
+  var LOAD_STEPS = [
+    'Location analyzed', 'Soil conditions analyzed', 'Weather data collected',
+    'Market trends analyzed', 'Yield estimated', 'Production cost calculated', 'Risk assessed'
+  ];
+  function runAnalysis() {
+    var farm = {
+      village: document.getElementById('fVillage').value || 'Savner',
+      district: document.getElementById('fDistrict').value || 'Nagpur',
+      state: document.getElementById('fState').value || 'Maharashtra',
+      country: 'India',
+      area: parseFloat(document.getElementById('fArea').value) || 5,
+      unit: state.unit,
+      soil: state.soil,
+      ph: 7.1, nitrogen: 52, phosphorus: 24, potassium: 38, organicCarbon: 0.6,
+      irrigation: state.irrigation,
+      water: state.water,
+      previousCrop: document.getElementById('fPrevCrop').value,
+      crop: state.crop,
+      seedBudget: parseFloat(document.getElementById('fSeed').value) || 12000,
+      fertilizerBudget: parseFloat(document.getElementById('fFert').value) || 25000,
+      labour: document.getElementById('fLabour').value,
+      machinery: state.machinery,
+      transportation: document.getElementById('fTransport').value
+    };
+    if (state.crop === 'recommended') farm.crop = 'onion';
+    AgriIntel.saveFarm(farm);
+
+    var overlay = document.getElementById('loadingOverlay');
+    overlay.classList.remove('hidden'); overlay.classList.add('flex');
+    var items = document.getElementById('loadItems');
+    items.innerHTML = '';
+    var bar = document.getElementById('loadBar');
+    bar.style.width = '0%';
+
+    LOAD_STEPS.forEach(function (label, i) {
+      var row = document.createElement('div');
+      row.style.cssText = 'opacity:0;transform:translateY(8px);transition:all .4s ease';
+      row.innerHTML = '<div class="flex items-center gap-3"><span class="grid h-6 w-6 flex-shrink-0 place-items-center rounded-full border-2 border-white/25"><span class="material-symbols-outlined text-[13px]" style="opacity:0">check</span></span><span class="text-sm font-medium text-white/85">' + label + '</span></div>';
+      items.appendChild(row);
+      setTimeout(function () {
+        row.style.opacity = '1'; row.style.transform = 'translateY(0)';
+        setTimeout(function () {
+          var dot = row.querySelector('span:first-child');
+          dot.style.borderColor = '#10b981'; dot.style.background = '#10b981';
+          dot.querySelector('span').style.opacity = '1';
+        }, 250);
+        bar.style.width = Math.round(((i + 1) / LOAD_STEPS.length) * 100) + '%';
+      }, 550 + i * 620);
+    });
+
+    setTimeout(function () {
+      bar.style.width = '100%';
+      var heading = overlay.querySelector('h3');
+      heading.textContent = 'Your intelligence dashboard is ready';
+      setTimeout(function () { window.location.href = './dashboard.html'; }, 900);
+    }, 550 + LOAD_STEPS.length * 620 + 600);
+  }
+
+  renderPickers();
+  refreshStep();
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && state.step < 5 && !document.getElementById('loadingOverlay').classList.contains('flex')) {
+      var tag = e.target.tagName;
+      if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA') return;
+      nextStep();
+    }
+  });
+</script>
+</body>
+</html>
