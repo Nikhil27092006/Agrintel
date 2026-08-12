@@ -49,9 +49,246 @@
       background: conic-gradient(from 180deg, #0b5d38, #059669, #0b5d38);
       animation: aiSpin 14s linear infinite;
     }
+
+    /* ---------- Banner Carousel (edge-to-edge, full bleed, 16:8 desktop) ---------- */
+    .banner-carousel {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      background: linear-gradient(180deg, #f6f5f0 0%, #eef4ef 100%);
+      padding: 14px clamp(12px, 2vw, 24px);
+    }
+    .banner-carousel__viewport {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #0a3d27;
+      box-shadow: 0 18px 38px -20px rgba(5, 41, 28, 0.45);
+      aspect-ratio: 16 / 5;                 /* desktop/tablet: thinner banner */
+      outline: none;
+      animation: bannerFadeIn 0.7s ease-out both;
+    }
+    @media (max-width: 1023px) { .banner-carousel__viewport { aspect-ratio: 16 / 6; } }
+    @media (max-width: 640px)  { .banner-carousel__viewport { aspect-ratio: 16 / 7; } }
+    .banner-carousel__track {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+      will-change: transform;
+    }
+    .banner-carousel__slide {
+      position: relative;
+      flex: 0 0 100%;
+      min-width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .banner-carousel__media {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;                    /* fill the viewport, never distort */
+      object-position: center;
+      display: block;
+      background: #0a3d27;
+      -webkit-user-drag: none;
+      user-select: none;
+      transform: scale(1);
+      transition: transform 6s ease-out;
+    }
+    .banner-carousel__slide.is-active .banner-carousel__media { transform: scale(1.06); }
+    .banner-carousel__caption {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: clamp(28px, 4vw, 44px) clamp(18px, 3vw, 32px) clamp(58px, 6vw, 72px);
+      background: linear-gradient(180deg, transparent 0%, rgba(10, 61, 39, 0.55) 55%, rgba(10, 61, 39, 0.9) 100%);
+      color: #fff;
+      z-index: 2;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+      font-family: 'Inter', sans-serif;
+      transform: translateY(8px);
+      opacity: 0;
+      transition: opacity 0.55s ease 0.15s, transform 0.55s ease 0.15s;
+      pointer-events: none;
+    }
+    .banner-carousel__slide.is-active .banner-carousel__caption { opacity: 1; transform: translateY(0); }
+    .banner-carousel__eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #a7f3d0;
+      margin: 0 0 4px;
+    }
+    .banner-carousel__title {
+      font-size: clamp(14px, 1.6vw, 22px);
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      margin: 0;
+      max-width: 720px;
+    }
+
+    /* Arrows */
+    .banner-carousel__arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(231, 228, 220, 0.6);
+      box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.25);
+      color: #0a3d27;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+    }
+    .banner-carousel__viewport:hover .banner-carousel__arrow,
+    .banner-carousel__viewport:focus-within .banner-carousel__arrow,
+    .banner-carousel__arrow:focus { opacity: 1; }
+    .banner-carousel__arrow:hover { background: #ffffff; transform: translateY(-50%) scale(1.06); }
+    .banner-carousel__arrow--prev { left: 14px; }
+    .banner-carousel__arrow--next { right: 14px; }
+    .banner-carousel__arrow .material-symbols-outlined { font-size: 22px; }
+    @media (max-width: 640px) {
+      .banner-carousel__arrow { width: 36px; height: 36px; opacity: 0.95; }
+      .banner-carousel__arrow--prev { left: 8px; }
+      .banner-carousel__arrow--next { right: 8px; }
+      .banner-carousel__arrow .material-symbols-outlined { font-size: 20px; }
+    }
+
+    /* Pagination dots */
+    .banner-carousel__dots {
+      position: absolute;
+      bottom: clamp(16px, 2vw, 22px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 3;
+    }
+    .banner-carousel__dot {
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      border: 0;
+      padding: 0;
+      background: rgba(255, 255, 255, 0.55);
+      cursor: pointer;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+    .banner-carousel__dot[aria-current="true"] { width: 22px; background: #ffffff; }
+    .banner-carousel__dot:hover { background: rgba(255, 255, 255, 0.85); }
+    .banner-carousel__dot:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+
+    @keyframes bannerFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .banner-carousel__viewport { animation: none; }
+      .banner-carousel__track { transition: none; }
+      .banner-carousel__media { transition: none; transform: none !important; }
+      .banner-carousel__caption { transition: none; opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body class="font-sans antialiased">
+
+<!-- ======= BANNER CAROUSEL (top of page, edge-to-edge, reusable) ======= -->
+<!--
+  Reusable: add or remove a <article class="banner-carousel__slide"> …
+  Dots and arrow logic auto-sync to whatever slides you put inside.
+  Each slide needs: src, alt, eyebrow text, title text.
+-->
+<section aria-label="AgriIntel highlights" class="banner-carousel" id="agriBannerCarousel">
+  <div
+    class="banner-carousel__viewport"
+    id="agriBannerViewport"
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="AgriIntel highlights"
+    tabindex="0"
+  >
+    <div class="banner-carousel__track" id="agriBannerTrack" aria-live="polite">
+
+      <article class="banner-carousel__slide is-active" role="group" aria-roledescription="slide" aria-label="1 of 5">
+        <img class="banner-carousel__media"
+             src="./Banner_for_landing_page/Gemini_Generated_Image_59vmsw59vmsw59vm.png"
+             alt="Healthy crop field at sunrise"
+             decoding="async" fetchpriority="high"/>
+        <div class="banner-carousel__caption">
+          <p class="banner-carousel__eyebrow">Smarter decisions</p>
+          <p class="banner-carousel__title">Know exactly what to grow — before the season starts.</p>
+        </div>
+      </article>
+
+      <article class="banner-carousel__slide" role="group" aria-roledescription="slide" aria-label="2 of 5">
+        <img class="banner-carousel__media"
+             src="./Banner_for_landing_page/Gemini_Generated_Image_59vmsw59vmsw59vm (1).png"
+             alt="Mandi and market price dashboard"
+             loading="lazy" decoding="async"/>
+        <div class="banner-carousel__caption">
+          <p class="banner-carousel__eyebrow">Market intelligence</p>
+          <p class="banner-carousel__title">Sell at the right time. Price forecasts you can act on.</p>
+        </div>
+      </article>
+
+      <article class="banner-carousel__slide" role="group" aria-roledescription="slide" aria-label="3 of 5">
+        <img class="banner-carousel__media"
+             src="./Banner_for_landing_page/Gemini_Generated_Image_59vmsw59vmsw59vm (2).png"
+             alt="Weather analysis and rainfall"
+             loading="lazy" decoding="async"/>
+        <div class="banner-carousel__caption">
+          <p class="banner-carousel__eyebrow">Weather &amp; risk</p>
+          <p class="banner-carousel__title">See risks early. Plan with the weather, not against it.</p>
+        </div>
+      </article>
+
+      <article class="banner-carousel__slide" role="group" aria-roledescription="slide" aria-label="4 of 5">
+        <img class="banner-carousel__media"
+             src="./Banner_for_landing_page/Gemini_Generated_Image_59vmsw59vmsw59vm (3).png"
+             alt="Yield and profit prediction"
+             loading="lazy" decoding="async"/>
+        <div class="banner-carousel__caption">
+          <p class="banner-carousel__eyebrow">Yield &amp; profit</p>
+          <p class="banner-carousel__title">Predictions grounded in your farm profile — not generic averages.</p>
+        </div>
+      </article>
+
+      <article class="banner-carousel__slide" role="group" aria-roledescription="slide" aria-label="5 of 5">
+        <img class="banner-carousel__media"
+             src="./Banner_for_landing_page/Gemini_Generated_Image_59vmsw59vmsw59vm (4).png"
+             alt="Farmer using AgriIntel dashboard"
+             loading="lazy" decoding="async"/>
+        <div class="banner-carousel__caption">
+          <p class="banner-carousel__eyebrow">Built for farmers</p>
+          <p class="banner-carousel__title">A calm dashboard that talks your language.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Arrows -->
+    <button type="button" class="banner-carousel__arrow banner-carousel__arrow--prev"
+            id="agriBannerPrev" aria-label="Previous slide">
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+    </button>
+    <button type="button" class="banner-carousel__arrow banner-carousel__arrow--next"
+            id="agriBannerNext" aria-label="Next slide">
+      <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+    </button>
+
+    <!-- Dots (auto-built by JS, kept here as fallback for no-JS users) -->
+    <div class="banner-carousel__dots" id="agriBannerDots" role="tablist" aria-label="Choose slide"></div>
+  </div>
+</section>
 
 <!-- ======= NAVBAR ======= -->
 <header class="fixed top-0 inset-x-0 z-50 transition-all duration-300" id="siteNav">
@@ -382,6 +619,138 @@
 
     // Reveal
     AIApp.initReveal();
+
+    // Banner carousel — autoplay, hover-pause, arrows, dots, keyboard, swipe
+    (function initBannerCarousel() {
+      var root = document.getElementById('agriBannerCarousel');
+      if (!root) return;
+
+      var viewport = document.getElementById('agriBannerViewport');
+      var track    = document.getElementById('agriBannerTrack');
+      var prevBtn  = document.getElementById('agriBannerPrev');
+      var nextBtn  = document.getElementById('agriBannerNext');
+      var dotsHost = document.getElementById('agriBannerDots');
+      var slides   = Array.prototype.slice.call(track.children);
+      if (slides.length < 2) return;
+
+      var AUTOPLAY_MS = 3000;        // 3s
+      var index = slides.findIndex(function (s) { return s.classList.contains('is-active'); });
+      if (index < 0) index = 0;
+      var timer = null;
+      var isPaused = false;
+      var prefersReduced = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // Build dots dynamically so it stays in sync with the slide list
+      dotsHost.innerHTML = '';
+      slides.forEach(function (slide, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'banner-carousel__dot';
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        b.setAttribute('aria-selected', i === index ? 'true' : 'false');
+        if (i === index) b.setAttribute('aria-current', 'true');
+        b.addEventListener('click', function () { goTo(i, true); });
+        dotsHost.appendChild(b);
+      });
+      var dots = Array.prototype.slice.call(dotsHost.children);
+
+      function update() {
+        track.style.transform = 'translate3d(' + (-index * 100) + '%, 0, 0)';
+        slides.forEach(function (s, i) {
+          var active = i === index;
+          s.classList.toggle('is-active', active);
+          s.setAttribute('aria-hidden', active ? 'false' : 'true');
+        });
+        dots.forEach(function (d, i) {
+          d.setAttribute('aria-current', i === index ? 'true' : 'false');
+          d.setAttribute('aria-selected', i === index ? 'true' : 'false');
+        });
+      }
+
+      function goTo(i, fromUser) {
+        var n = slides.length;
+        index = ((i % n) + n) % n;
+        update();
+        if (fromUser) restart();
+      }
+      function next() { goTo(index + 1); }
+      function prev() { goTo(index - 1); }
+
+      function start() {
+        if (isPaused || prefersReduced) return;
+        stop();
+        timer = window.setInterval(next, AUTOPLAY_MS);
+      }
+      function stop() { if (timer) { window.clearInterval(timer); timer = null; } }
+      function restart() { stop(); start(); }
+
+      // Hover pauses, mouseleave resumes. (Keyboard pause is handled by arrow keys directly.)
+      viewport.addEventListener('mouseenter', function () { isPaused = true;  stop(); });
+      viewport.addEventListener('mouseleave', function () { isPaused = false; start(); });
+
+      // Pause when the tab is hidden, resume when visible
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { stop(); }
+        else if (!isPaused)   { start(); }
+      });
+
+      // Arrows
+      prevBtn.addEventListener('click', function () { prev(); });
+      nextBtn.addEventListener('click', function () { next(); });
+
+      // Keyboard ←/→ when the viewport has focus
+      viewport.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); prev(); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+      });
+
+      // Touch swipe
+      var touchStartX = 0, touchDX = 0, touching = false;
+      viewport.addEventListener('touchstart', function (e) {
+        touching = true;
+        touchStartX = e.touches[0].clientX;
+        touchDX = 0;
+        isPaused = true; stop();
+      }, { passive: true });
+      viewport.addEventListener('touchmove', function (e) {
+        if (!touching) return;
+        touchDX = e.touches[0].clientX - touchStartX;
+      }, { passive: true });
+      viewport.addEventListener('touchend', function () {
+        if (!touching) return;
+        touching = false;
+        if (Math.abs(touchDX) > 40) { (touchDX < 0 ? next : prev)(); }
+        isPaused = false; start();
+      });
+
+      // Pause only when the carousel LEAVES the viewport.
+      // We seed the "has been seen" flag at startup so the very first observation
+      // (which can be a false-negative if the carousel is partly above the fold
+      // when the observer registers) never kills the timer we just started.
+      var hasBeenVisible = false;
+      if ('IntersectionObserver' in window) {
+        var visIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              hasBeenVisible = true;
+              if (!isPaused) start();
+            } else if (hasBeenVisible) {
+              stop();
+            }
+          });
+        }, { threshold: 0.15 });
+        visIo.observe(root);
+      }
+
+      update();
+      start();
+
+      // Safety net: if start() somehow bailed (e.g. a transient paused state),
+      // make sure the autoplay timer is alive within 500ms of mount.
+      window.setTimeout(function () { if (!timer) start(); }, 500);
+    })();
   })();
 </script>
 </body>
