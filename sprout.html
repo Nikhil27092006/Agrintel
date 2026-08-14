@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Sprout — AgriIntel's AI farming assistant. Get instant answers about crops, weather, market prices, and farm decisions."/>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%230b5d38'/%3E%3Cpath d='M12 18c-3.3 0-6-2.7-6-6V6h6c3.3 0 6 2.7 6 6s-2.7 6-6 6z' fill='%23a7f3d0'/%3E%3Cpath d='M12 18V6' stroke='%23fff' stroke-width='1.4'/%3E%3C/svg%3E"/>
+  <title>SPROUT — AgriIntel AI Assistant</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'Noto Sans', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'], display: ['Inter', 'Noto Sans Devanagari', 'ui-sans-serif', 'system-ui'] } } } };</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./agrintel.css"/>
+  <script src="./agrintel-core.js"></script>
+  <script src="./agrintel-app.js"></script>
+  <style>
+    .chat-view { display: none; }
+    .chat-view.active { display: flex; flex-direction: column; animation: aiFadeUp .45s cubic-bezier(0.22,1,0.36,1); }
+    
+    #sidebar { width: 280px; transition: transform .3s ease; }
+    #appShell { margin-left: 280px; }
+@media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); position: fixed; height: 100vh; }
+      #sidebar.open { transform: translateX(0); }
+      #appShell { margin-left: 0; }
+    }
+
+    .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; color: #46524b; cursor: pointer; transition: all .18s ease; border: 1px solid transparent; }
+    .nav-item:hover { background: #f0f3ee; color: #0b5d38; }
+    .nav-item.nav-on { background: #0b5d38; color: #fff; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
+    .nav-item .mat { font-size: 20px; }
+    .nav-item.nav-on .mat { font-variation-settings: 'FILL' 1; }
+
+    /* Sprout AI sidebar item — green-themed variant of .nav-item */
+    .nav-item[data-nav="sprout"] { color: #0b5d38; background: #f0f3ee; border-color: #d8e6dd; }
+    .nav-item[data-nav="sprout"] .mat { color: #0b5d38; }
+    .nav-item[data-nav="sprout"]:hover { background: #0b5d38; color: #fff; border-color: #0b5d38; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
+    .nav-item[data-nav="sprout"]:hover .mat { color: #fff; font-variation-settings: 'FILL' 1; }
+    .nav-item[data-nav="sprout"].nav-on { background: #0b5d38; color: #fff; border-color: #0b5d38; }
+    .nav-item[data-nav="sprout"].nav-on .mat { color: #fff; }
+
+    /* Crop Intelligence sidebar item — same light-green base as Sprout AI */
+    .nav-item[data-nav="crops"] { color: #0b5d38; background: #f0f3ee; border-color: #d8e6dd; }
+    .nav-item[data-nav="crops"] .mat { color: #0b5d38; }
+    .nav-item[data-nav="crops"]:hover { background: #0b5d38; color: #fff; border-color: #0b5d38; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
+    .nav-item[data-nav="crops"]:hover .mat { color: #fff; font-variation-settings: 'FILL' 1; }
+    .nav-item[data-nav="crops"].nav-on { background: #0b5d38; color: #fff; border-color: #0b5d38; }
+    .nav-item[data-nav="crops"].nav-on .mat { color: #fff; }
+    
+    .chat-message { animation: aiFadeUp .35s cubic-bezier(0.22,1,0.36,1); }
+    .chat-message.user { align-self: flex-end; }
+    .chat-message.assistant { align-self: flex-start; }
+    
+    .chat-bubble {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      position: relative;
+    }
+    .chat-message.user .chat-bubble {
+      background: #0b5d38;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-message.assistant .chat-bubble {
+      background: #fff;
+      color: #16211b;
+      border: 1px solid #e7e4dc;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px -2px rgba(21,33,26,0.08);
+    }
+    
+    .chat-bubble .markdown { white-space: pre-wrap; }
+    .chat-bubble code { background: #f0f3ee; padding: 2px 6px; border-radius: 6px; font-size: 13px; }
+    .chat-bubble pre { background: #0a3d27; color: #a7f3d0; padding: 12px; border-radius: 12px; overflow-x: auto; margin: 8px 0; }
+    .chat-bubble pre code { background: transparent; padding: 0; color: inherit; }
+    .chat-bubble ul, .chat-bubble ol { margin: 8px 0 8px 20px; }
+    .chat-bubble li { margin: 4px 0; }
+    .chat-bubble strong { color: #0a3d27; }
+    
+    .typing-indicator { display: flex; gap: 4px; padding: 8px 12px; }
+    .typing-indicator span { 
+      width: 8px; height: 8px; border-radius: 50%; 
+      background: #0b5d38; opacity: 0.4;
+      animation: typingBounce 1.4s ease-in-out infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+    
+    .suggestion-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 999px;
+      background: #f0f3ee; border: 1px solid #e7e4dc;
+      font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+      color: #46524b; cursor: pointer; transition: all .18s ease;
+      white-space: nowrap;
+    }
+    .suggestion-chip:hover { background: #e2efe7; border-color: #0b5d38; color: #0b5d38; }
+    
+    .chat-input-area { 
+      background: #fff; 
+      border-top: 1px solid #e7e4dc;
+      padding: 12px 16px;
+    }
+    
+    .chat-textarea {
+      width: 100%;
+      min-height: 52px;
+      max-height: 160px;
+      padding: 12px 16px;
+      border: 1px solid #e7e4dc;
+      border-radius: 14px;
+      background: #fafafa;
+      font-family: 'Noto Sans', sans-serif;
+      font-size: 14px;
+      color: #16211b;
+      resize: none;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .chat-textarea:focus {
+      border-color: #0b5d38;
+      box-shadow: 0 0 0 3px rgba(11,93,56,0.12);
+      background: #fff;
+    }
+    .chat-textarea::placeholder { color: #7c857f; }
+    
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; padding: 24px; text-align: center;
+    }
+    .empty-state .icon { 
+      width: 80px; height: 80px; border-radius: 24px; 
+      background: linear-gradient(135deg, #0b5d38, #059669); 
+      display: grid; place-items: center; color: #fff; 
+      box-shadow: 0 16px 40px -12px rgba(11,93,56,0.4);
+    }
+    
+    .conversation-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px; border-radius: 12px;
+      cursor: pointer; transition: all .18s ease;
+      border: 1px solid transparent;
+    }
+    .conversation-item:hover { background: #f0f3ee; }
+    .conversation-item.active { background: #e2efe7; border-color: #0b5d38; }
+    .conversation-item .icon { 
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      display: grid; place-items: center; color: #fff;
+    }
+    .conversation-item .meta { flex: 1; min-width: 0; }
+    .conversation-item .title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: #0a3d27; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conversation-item .preview { font-size: 11px; color: #7c857f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .conversation-item .time { font-size: 10px; color: #7c857f; margin-top: 4px; }
+    
+    .sidebar-header {
+      padding: 16px; border-bottom: 1px solid #e7e4dc;
+    }
+    .sidebar-footer { padding: 16px; border-top: 1px solid #e7e4dc; }
+    
+    @media (max-width: 640px) {
+      .chat-bubble { max-width: 92%; }
+    }
+  </style>
+</head>
+<body class="app-bg min-h-screen">
+
+<!-- ================= SIDEBAR (desktop) ================= -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-[#e7e4dc] bg-white hidden lg:flex">
+  <div class="sidebar-header flex items-center gap-2.5">
+    <span class="grid h-9 w-9 place-items-center rounded-xl bg-[#0b5d38] text-white shadow-md shadow-emerald-900/20">
+      <span class="material-symbols-outlined text-[20px] filled">sprout</span>
+    </span>
+    <span class="font-display text-lg font-extrabold tracking-tight text-[#0a3d27]">SPROUT</span>
+  </div>
+  
+  <div class="flex-1 overflow-y-auto px-3 py-2 nice-scroll">
+    <div class="mb-2 px-2">
+      <button class="w-full flex items-center gap-3 rounded-xl p-3 bg-emerald-50 border border-emerald-100 text-left hover:bg-emerald-100 transition-colors" onclick="startNewChat()">
+        <span class="grid h-8 w-8 place-items-center rounded-lg bg-[#0b5d38] text-white">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+        </span>
+        <span class="font-display font-semibold text-[#0a3d27]">New Conversation</span>
+      </button>
+    </div>
+    
+    <p class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#7c857f]">History</p>
+    <div id="conversationList" class="space-y-1"></div>
+  </div>
+  
+  <div class="sidebar-footer">
+    <div class="rounded-2xl bg-[#0a3d27] p-4 text-white">
+      <p class="font-display text-sm font-bold" id="sideFarmName">Nagpur, Maharashtra</p>
+      <p class="mt-0.5 text-[11px] text-white/60" id="sideFarmMeta">5 Acres · Black Soil</p>
+      <a href="./analysis.html" class="mt-3 flex items-center justify-center gap-1.5 rounded-lg bg-white/10 py-2 text-xs font-bold hover:bg-white/20 transition-colors">
+        <span class="material-symbols-outlined text-[15px]">refresh</span> Re-run analysis
+      </a>
+    </div>
+  </div>
+</aside>
+
+<div id="sidebarBackdrop" class="fixed inset-0 z-40 hidden bg-black/40 backdrop-blur-sm lg:hidden" onclick="toggleSidebar(false)"></div>
+
+<!-- ================= SHELL ================= -->
+<div id="appShell">
+  <!-- Top bar -->
+  <header class="sticky top-0 z-30 border-b border-[#e7e4dc] bg-white/85 backdrop-blur-xl">
+    <div class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <button class="grid h-10 w-10 place-items-center rounded-xl border border-[#e7e4dc] bg-white text-[#0b5d38] lg:hidden" onclick="toggleSidebar(true)">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div>
+          <h1 id="viewTitle" class="font-display text-lg font-extrabold tracking-tight text-[#0a3d27]">Sprout</h1>
+          <p id="viewBread" class="text-[11px] text-[#7c857f] hidden sm:block">AgriIntel · AI Farming Assistant</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="hidden items-center gap-2 rounded-full border border-[#e7e4dc] bg-white px-3 py-1.5 text-xs font-semibold text-[#46524b] md:flex">
+          <span class="material-symbols-outlined text-[15px] text-[#0b5d38] filled">location_on</span>
+          <span id="topFarm">Nagpur, Maharashtra</span>
+        </div>
+        <button class="relative grid h-10 w-10 place-items-center rounded-xl border border-[#e7e4dc] bg-white text-[#46524b] hover:text-[#0b5d38] transition-colors" onclick="AIApp.toast('No new notifications')">
+          <span class="material-symbols-outlined">notifications</span>
+          <span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#e11d48]"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 flex flex-col min-h-0 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+    
+    <!-- ==================== CHAT VIEW ==================== -->
+    <section class="chat-view active flex-1 flex flex-col" id="chatView">
+      
+      <!-- Messages area -->
+      <div id="messagesContainer" class="flex-1 overflow-y-auto space-y-4 pr-1 nice-scroll" style="scroll-behavior: smooth;">
+        <!-- Welcome state -->
+        <div id="welcomeState" class="empty-state flex-1">
+          <div class="icon">
+            <span class="material-symbols-outlined text-[36px]">sprout</span>
+          </div>
+          <h2 class="mt-6 font-display text-2xl font-extrabold text-[#0a3d27]">Hello, I'm Sprout 🌱</h2>
+          <p class="mt-2 text-[#46524b] max-w-md">Your AI farming assistant. Ask me about crops, weather, market prices, soil health, or any farm decision — I'm here to help.</p>
+          
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-md">
+            <button class="suggestion-chip" onclick="sendSuggestion('What crop should I grow this season?')">
+              <span class="material-symbols-outlined text-[16px]">sprout</span> Crop recommendation
+            </button>
+            <button class="suggestion-chip" onclick="sendSuggestion('What is the current onion price in Nagpur mandi?')">
+              <span class="material-symbols-outlined text-[16px]">storefront</span> Market prices
+            </button>
+            <button class="suggestion-chip" onclick="sendSuggestion('Weather forecast for my farm this week')">
+              <span class="material-symbols-outlined text-[16px]">partly_cloudy_day</span> Weather outlook
+            </button>
+            <button class="suggestion-chip" onclick="sendSuggestion('How to improve soil health for black soil?')">
+              <span class="material-symbols-outlined text-[16px]">texture</span> Soil health
+            </button>
+          </div>
+          
+          <p class="mt-6 text-[11px] text-[#7c857f] max-w-md">
+            <span class="font-semibold text-[#0a3d27]">Tip:</span> Sprout knows your farm context (location, soil, crop) from your AgriIntel profile for personalized answers.
+          </p>
+        </div>
+        
+        <!-- Messages will be inserted here -->
+        <div id="messagesList" class="space-y-4 hidden"></div>
+        
+        <!-- Typing indicator -->
+        <div id="typingIndicator" class="chat-message assistant hidden">
+          <div class="chat-bubble">
+            <div class="typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input area -->
+      <div class="chat-input-area">
+        <div class="flex items-end gap-3">
+          <textarea 
+            id="chatInput" 
+            class="chat-textarea flex-1" 
+            placeholder="Ask Sprout about crops, weather, prices, soil... (Shift+Enter for new line)"
+            rows="1"
+          ></textarea>
+          <button 
+            id="sendBtn" 
+            class="btn btn-primary flex-shrink-0 h-12 w-12 p-0" 
+            onclick="sendMessage()"
+            aria-label="Send message"
+          >
+            <span class="material-symbols-outlined text-[22px]">send</span>
+          </button>
+        </div>
+        <p class="mt-2 text-[11px] text-center text-[#7c857f]">
+          Press <kbd class="px-1.5 py-0.5 rounded bg-[#f0ede6] font-mono text-[10px]">Enter</kbd> to send · <kbd class="px-1.5 py-0.5 rounded bg-[#f0ede6] font-mono text-[10px]">Shift+Enter</kbd> for new line
+        </p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= MOBILE BOTTOM NAV ================= -->
+<nav class="fixed bottom-0 inset-x-0 z-50 flex items-stretch border-t border-[#e7e4dc] bg-white shadow-[0_-4px_20px_rgba(21,33,26,0.06)] lg:hidden" id="bottomNav"></nav>
+
+<!-- ================= MORE SHEET ================= -->
+<div class="sheet" id="moreSheet">
+  <div class="sheet-backdrop" onclick="closeMore()"></div>
+  <div class="sheet-panel">
+    <div class="mx-auto h-1 w-10 rounded-full bg-[#d9d7cf]"></div>
+    <p class="mt-4 font-display text-sm font-extrabold uppercase tracking-widest text-[#7c857f]">More</p>
+    <div class="mt-3 space-y-1" id="moreList"></div>
+  </div>
+</div>
+
+<script>
+/* ==================== NAV ==================== */
+var NAV = [
+  { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard' },
+  { id: 'farm', label: 'My Farm', icon: 'home_work' },
+  { id: 'crops', label: 'Crop Intelligence', icon: 'sprout' },
+  { id: 'market', label: 'Market Intelligence', icon: 'storefront' },
+  { id: 'weather', label: 'Weather & Risk', icon: 'partly_cloudy_day' },
+  { id: 'simulator', label: 'Profit Simulator', icon: 'calculate' },
+  { id: 'settings', label: 'Settings', icon: 'settings' }
+];
+var MAIN_BOTTOM = ['dashboard', 'farm', 'market', 'weather'];
+var MORE_ITEMS = ['crops', 'simulator', 'settings', 'sprout'];
+var TITLES = {
+  dashboard: 'Dashboard', farm: 'My Farm', crops: 'Crop Intelligence', market: 'Market Intelligence',
+  weather: 'Weather & Risk', simulator: 'Profit Simulator', settings: 'Settings', sprout: 'Sprout'
+};
+
+function buildNav() {
+  document.getElementById('sideNav').innerHTML = NAV.map(function (n) {
+    return '<button class="nav-item" data-nav="' + n.id + '" onclick="go(\'' + n.id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label + '</button>';
+  }).join('') + '<button class="nav-item" data-nav="sprout" onclick="go(\'sprout\')"><span class="material-symbols-outlined mat">sprout</span>Sprout AI</button>';
+  
+  document.getElementById('bottomNav').innerHTML = MAIN_BOTTOM.map(function (id) {
+    var n = NAV.filter(function (x) { return x.id === id; })[0];
+    return '<button class="bottom-item" data-nav="' + id + '" onclick="go(\'' + id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label.split(' ')[0] + '</button>';
+  }).join('') + '<button class="bottom-item" onclick="openMore()"><span class="material-symbols-outlined mat">more_horiz</span>More</button>';
+  
+  document.getElementById('moreList').innerHTML = MORE_ITEMS.map(function (id) {
+    var n = NAV.filter(function (x) { return x.id === id; })[0];
+    var icon = id === 'sprout' ? 'sprout' : n.icon;
+    return '<button class="nav-item w-full" data-nav="' + id + '" onclick="go(\'' + id + '\');closeMore()"><span class="material-symbols-outlined mat">' + icon + '</span>' + (id === 'sprout' ? 'Sprout AI' : n.label) + '</button>';
+  }).join('');
+}
+
+function go(id) {
+  if (id === 'sprout') {
+    document.getElementById('viewTitle').textContent = 'Sprout';
+    document.getElementById('viewBread').textContent = 'AgriIntel · AI Farming Assistant';
+    document.querySelectorAll('.nav-item, .bottom-item').forEach(function (el) {
+      el.classList.remove('nav-on');
+      if (el.getAttribute('data-nav') === 'sprout') el.classList.add('nav-on');
+    });
+    document.querySelectorAll('.app-view').forEach(function (v) { v.classList.remove('active'); });
+    document.getElementById('chatView').classList.add('active');
+    toggleSidebar(false);
+    return;
+  }
+  AIApp.go(id);
+  document.getElementById('viewTitle').textContent = TITLES[id];
+  document.getElementById('viewBread').textContent = 'AgriIntel · ' + TITLES[id];
+  toggleSidebar(false);
+}
+
+function toggleSidebar(open) {
+  var s = document.getElementById('sidebar'), b = document.getElementById('sidebarBackdrop');
+  if (open === false) { s.classList.remove('open'); b.classList.add('hidden'); }
+  else { s.classList.add('open'); b.classList.remove('hidden'); }
+}
+function openMore() { document.getElementById('moreSheet').classList.add('open'); }
+function closeMore() { document.getElementById('moreSheet').classList.remove('open'); }
+
+/* ==================== FARM CONTEXT ==================== */
+var farm = AgriIntel.getFarm();
+
+function applyFarm() {
+  var areaLabel = farm.area + ' ' + farm.unit;
+  document.getElementById('sideFarmName').textContent = farm.village + ', ' + farm.state;
+  document.getElementById('sideFarmMeta').textContent = areaLabel + ' · ' + farm.soil;
+  document.getElementById('topFarm').textContent = farm.village + ', ' + farm.state;
+  document.title = 'SPROUT — ' + farm.village + ', ' + farm.state;
+}
+
+/* ==================== CHAT LOGIC ==================== */
+var conversations = JSON.parse(localStorage.getItem('sprout_conversations') || '[]');
+var currentConversationId = null;
+var isStreaming = false;
+
+var GROQ_API_KEY = localStorage.getItem('GROQ_API_KEY') || "";
+var GROQ_MODEL = "openai/gpt-oss-120b";
+
+var SYSTEM_PROMPT = "You are Sprout, an expert AI farming assistant for AgriIntel. You help Indian farmers with crop recommendations, market intelligence, weather analysis, soil health, pest management, and farm decisions. Be practical, concise, and use Indian agricultural context (mandis, crops, seasons, government schemes). Always give actionable advice. Use metric units and Indian Rupees. If the user shares their farm context, personalize your response.";
+
+function getFarmContext() {
+  var f = AgriIntel.getFarm();
+  var ctx = "Farm Context: " + f.village + ", " + f.district + ", " + f.state + ". ";
+  ctx += f.area + " " + f.unit + "s, " + f.soil + ", " + f.irrigation + " irrigation, " + f.water + " water availability. ";
+  ctx += "Previous crop: " + f.previousCrop + ". Current crop: " + f.crop + ". ";
+  ctx += "Budget: Seeds ₹" + f.seedBudget + ", Fertilizer ₹" + f.fertilizerBudget + ". ";
+  return ctx;
+}
+
+function renderConversations() {
+  var list = document.getElementById('conversationList');
+  if (conversations.length === 0) {
+    list.innerHTML = '<p class="px-3 py-4 text-center text-xs text-[#7c857f]">No conversations yet. Start a new chat!</p>';
+    return;
+  }
+  list.innerHTML = conversations.slice().reverse().map(function (conv) {
+    var isActive = conv.id === currentConversationId;
+    var date = new Date(conv.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    var time = new Date(conv.updatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    return '<div class="conversation-item' + (isActive ? ' active' : '') + '" onclick="loadConversation(\'' + conv.id + '\')">' +
+      '<div class="icon" style="background: linear-gradient(135deg, #0b5d38, #059669);"><span class="material-symbols-outlined text-[16px]">chat</span></div>' +
+      '<div class="meta">' +
+        '<div class="title">' + (conv.title || 'New conversation') + '</div>' +
+        '<div class="preview">' + (conv.messages[0]?.content?.slice(0, 50) || 'Empty') + '...</div>' +
+        '<div class="time">' + date + ' · ' + time + '</div>' +
+      '</div>' +
+      '<button class="text-[#7c857f] hover:text-red-600 p-1" onclick="event.stopPropagation(); deleteConversation(\'' + conv.id + '\')" aria-label="Delete"><span class="material-symbols-outlined text-[18px]">delete</span></button>' +
+    '</div>';
+  }).join('');
+}
+
+function startNewChat() {
+  currentConversationId = 'conv_' + Date.now();
+  var newConv = {
+    id: currentConversationId,
+    title: 'New conversation',
+    messages: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  conversations.unshift(newConv);
+  saveConversations();
+  renderConversations();
+  showChatInterface();
+  clearMessages();
+  scrollToBottom();
+}
+
+function loadConversation(id) {
+  var conv = conversations.find(function (c) { return c.id === id; });
+  if (!conv) return;
+  currentConversationId = id;
+  renderConversations();
+  showChatInterface();
+  renderMessages(conv.messages);
+  scrollToBottom();
+}
+
+function deleteConversation(id) {
+  conversations = conversations.filter(function (c) { return c.id !== id; });
+  saveConversations();
+  if (currentConversationId === id) {
+    currentConversationId = null;
+    document.getElementById('welcomeState').classList.remove('hidden');
+    document.getElementById('messagesList').classList.add('hidden');
+    document.getElementById('messagesList').innerHTML = '';
+  }
+  renderConversations();
+}
+
+function saveConversations() {
+  localStorage.setItem('sprout_conversations', JSON.stringify(conversations));
+}
+
+function showChatInterface() {
+  document.getElementById('welcomeState').classList.add('hidden');
+  document.getElementById('messagesList').classList.remove('hidden');
+}
+
+function clearMessages() {
+  document.getElementById('messagesList').innerHTML = '';
+}
+
+function renderMessages(messages) {
+  var container = document.getElementById('messagesList');
+  container.innerHTML = messages.map(function (msg) {
+    return renderMessage(msg.role, msg.content, false);
+  }).join('');
+}
+
+function renderMessage(role, content, append) {
+  var html = '<div class="chat-message ' + role + '">' +
+    '<div class="chat-bubble">' +
+      '<div class="markdown">' + formatMarkdown(content) + '</div>' +
+    '</div>' +
+  '</div>';
+  if (append) {
+    document.getElementById('messagesList').insertAdjacentHTML('beforeend', html);
+  }
+  return html;
+}
+
+function formatMarkdown(text) {
+  return text
+    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+    .replace(/\n/g, '<br>');
+}
+
+function appendMessage(role, content) {
+  showChatInterface();
+  var html = renderMessage(role, content, true);
+  scrollToBottom();
+  return html;
+}
+
+function scrollToBottom() {
+  var container = document.getElementById('messagesContainer');
+  setTimeout(function () { container.scrollTop = container.scrollHeight; }, 50);
+}
+
+function showTyping() {
+  document.getElementById('typingIndicator').classList.remove('hidden');
+  scrollToBottom();
+}
+
+function hideTyping() {
+  document.getElementById('typingIndicator').classList.add('hidden');
+}
+
+async function sendMessage() {
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text || isStreaming) return;
+  
+  input.value = '';
+  input.style.height = 'auto';
+  
+  appendMessage('user', text);
+  showTyping();
+  isStreaming = true;
+  document.getElementById('sendBtn').disabled = true;
+  
+  try {
+    var conv = conversations.find(function (c) { return c.id === currentConversationId; });
+    if (!conv) {
+      currentConversationId = 'conv_' + Date.now();
+      conv = {
+        id: currentConversationId,
+        title: text.slice(0, 40),
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      conversations.unshift(conv);
+    }
+    
+    conv.messages.push({ role: 'user', content: text, timestamp: Date.now() });
+    
+    var messages = [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + getFarmContext() }
+    ];
+    conv.messages.forEach(function (m) { messages.push({ role: m.role, content: m.content }); });
+    
+    var response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + GROQ_API_KEY
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: messages,
+        temperature: 0.3,
+        max_tokens: 2048,
+        stream: true
+      })
+    });
+    
+    if (!response.ok) throw new Error('API error: ' + response.status);
+    
+    hideTyping();
+    var fullResponse = '';
+    var assistantBubble = document.createElement('div');
+    assistantBubble.className = 'chat-message assistant';
+    assistantBubble.innerHTML = '<div class="chat-bubble"><div class="markdown"></div></div>';
+    document.getElementById('messagesList').appendChild(assistantBubble);
+    var markdownEl = assistantBubble.querySelector('.markdown');
+    
+    var reader = response.body.getReader();
+    var decoder = new TextDecoder();
+    
+    while (true) {
+      var { done, value } = await reader.read();
+      if (done) break;
+      
+      var chunk = decoder.decode(value, { stream: true });
+      var lines = chunk.split('\n');
+      
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line.startsWith('data: ')) continue;
+        var data = line.slice(6);
+        if (data === '[DONE]') continue;
+        
+        try {
+          var parsed = JSON.parse(data);
+          var delta = parsed.choices[0]?.delta?.content;
+          if (delta) {
+            fullResponse += delta;
+            markdownEl.innerHTML = formatMarkdown(fullResponse);
+            scrollToBottom();
+          }
+        } catch (e) {}
+      }
+    }
+    
+    conv.messages.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+    conv.updatedAt = Date.now();
+    if (conv.title === 'New conversation') {
+      conv.title = text.slice(0, 40);
+    }
+    saveConversations();
+    renderConversations();
+    
+  } catch (err) {
+    hideTyping();
+    appendMessage('assistant', 'Sorry, I encountered an error: ' + err.message + '. Please try again.');
+    console.error(err);
+  } finally {
+    isStreaming = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('chatInput').focus();
+  }
+}
+
+function sendSuggestion(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+function autoResizeTextarea() {
+  var ta = document.getElementById('chatInput');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+}
+
+/* ==================== EVENT LISTENERS ==================== */
+document.getElementById('chatInput').addEventListener('input', autoResizeTextarea);
+
+document.getElementById('chatInput').addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+document.addEventListener('keydown', function (e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    sendMessage();
+  }
+  if (e.key === 'Escape') {
+    closeMore();
+    toggleSidebar(false);
+  }
+});
+
+/* ==================== INIT ==================== */
+buildNav();
+applyFarm();
+renderConversations();
+
+if (conversations.length > 0) {
+  loadConversation(conversations[0].id);
+}
+</script>
+</body>
+</html>

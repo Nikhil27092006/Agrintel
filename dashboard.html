@@ -12,6 +12,9 @@
   <link rel="stylesheet" href="./agrintel.css"/>
   <script src="./agrintel-core.js"></script>
   <script src="./agrintel-app.js"></script>
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <style>
     .app-view { display: none; }
     .app-view.active { display: block; animation: aiFadeUp .45s cubic-bezier(0.22,1,0.36,1); }
@@ -30,6 +33,13 @@
     .nav-item.nav-on { background: #0b5d38; color: #fff; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
     .nav-item .mat { font-size: 20px; }
     .nav-item.nav-on .mat { font-variation-settings: 'FILL' 1; }
+
+    /* Sprout AI sidebar item — green-themed variant of .nav-item */
+    .chat-nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600; color: #0b5d38; cursor: pointer; transition: all .18s ease; border: 1px solid #d8e6dd; background: #f0f3ee; }
+    .chat-nav-item:hover { background: #0b5d38; color: #fff; border-color: #0b5d38; box-shadow: 0 8px 20px -8px rgba(11,93,56,.7); }
+    .chat-nav-item:hover .mat { font-variation-settings: 'FILL' 1; }
+    .chat-nav-item .mat { font-size: 20px; color: #0b5d38; transition: color .18s ease; }
+    .chat-nav-item:hover .mat { color: #fff; }
 
     .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; flex: 1; padding: 8px 0; font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600; color: #7c857f; cursor: pointer; transition: color .18s ease; }
     .bottom-item .mat { font-size: 22px; }
@@ -241,6 +251,792 @@
       <div class="mt-6 grid gap-4 lg:grid-cols-2" id="settingsGrid"></div>
       <div class="card mt-6 p-6" id="aboutCard"></div>
     </section>
+
+    <!-- ==================== VIEW: DOCUMENTATION ==================== -->
+    <section class="app-view" id="view-docs" style="overflow:hidden;">
+      <!-- Docs Hero -->
+      <div class="docs-hero" id="docsHero">
+        <!-- Floating background orbs -->
+        <div class="docs-orb docs-orb-1"></div>
+        <div class="docs-orb docs-orb-2"></div>
+        <div class="docs-orb docs-orb-3"></div>
+        <!-- Floating particles -->
+        <div class="docs-particles" id="docsParticles"></div>
+        <!-- Grid overlay -->
+        <div class="docs-grid-overlay"></div>
+        <div class="relative z-10 text-center py-16 px-4">
+          <div class="docs-badge">
+            <span class="material-symbols-outlined text-[15px]">menu_book</span>
+            <span>Platform Documentation</span>
+          </div>
+          <h1 class="docs-hero-title">AgriIntel Platform</h1>
+          <p class="docs-hero-sub">Everything you need to grow smarter, sell at the right time, and make data-driven decisions for your farm.</p>
+          <!-- Animated stats row -->
+          <div class="docs-stats-row">
+            <div class="docs-stat">
+              <span class="docs-stat-num" data-target="7">0</span>
+              <span class="docs-stat-label">Core Modules</span>
+            </div>
+            <div class="docs-stat-divider"></div>
+            <div class="docs-stat">
+              <span class="docs-stat-num" data-target="40">0</span>
+              <span class="docs-stat-label">+ Crop Types</span>
+            </div>
+            <div class="docs-stat-divider"></div>
+            <div class="docs-stat">
+              <span class="docs-stat-num" data-target="84">0</span>
+              <span class="docs-stat-label">% AI Confidence</span>
+            </div>
+            <div class="docs-stat-divider"></div>
+            <div class="docs-stat">
+              <span class="docs-stat-num" data-target="500">0</span>
+              <span class="docs-stat-label">+ Mandi Prices</span>
+            </div>
+          </div>
+          <!-- Quick nav pills -->
+          <div class="docs-quicknav">
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-getting-started')">
+              <span class="material-symbols-outlined text-[15px]">rocket_launch</span> Getting Started
+            </button>
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-features')">
+              <span class="material-symbols-outlined text-[15px]">grid_view</span> Features
+            </button>
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-ai')">
+              <span class="material-symbols-outlined text-[15px]">smart_toy</span> Sprout AI
+            </button>
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-market')">
+              <span class="material-symbols-outlined text-[15px]">trending_up</span> Market Intel
+            </button>
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-api')">
+              <span class="material-symbols-outlined text-[15px]">hub</span> Architecture
+            </button>
+            <button class="docs-qn-pill" onclick="scrollDocSection('docs-faq')">
+              <span class="material-symbols-outlined text-[15px]">help_outline</span> FAQ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Docs Body -->
+      <div class="docs-body">
+        <!-- GETTING STARTED -->
+        <div class="docs-section" id="docs-getting-started">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#0b5d38,#059669)">
+              <span class="material-symbols-outlined text-white text-[24px]">rocket_launch</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">01 / Getting Started</div>
+              <h2 class="docs-section-title">Set Up Your Farm in 3 Steps</h2>
+            </div>
+          </div>
+          <div class="docs-steps-grid">
+            <div class="docs-step-card" style="--step-delay:0ms">
+              <div class="docs-step-num">Step 01</div>
+              <div class="docs-step-icon"><span class="material-symbols-outlined text-[#0b5d38] text-[28px]">edit_note</span></div>
+              <h3 class="docs-step-name">Enter Farm Details</h3>
+              <p class="docs-step-desc">Tell AgriIntel your village, district, state, land area (acres or hectares), soil type, and irrigation method. This single-time setup powers all recommendations.</p>
+              <div class="docs-step-code">Analysis → Select Soil Type → Enter Area → Choose Irrigation</div>
+            </div>
+            <div class="docs-step-card" style="--step-delay:80ms">
+              <div class="docs-step-num">Step 02</div>
+              <div class="docs-step-icon"><span class="material-symbols-outlined text-[#0b5d38] text-[28px]">psychology</span></div>
+              <h3 class="docs-step-name">Run Intelligence Analysis</h3>
+              <p class="docs-step-desc">The AI engine cross-references soil pH, moisture levels, district weather patterns, and current mandi prices to score every compatible crop.</p>
+              <div class="docs-step-code">Click "Run Analysis" → AI scores 40+ crops → Results in &lt;2s</div>
+            </div>
+            <div class="docs-step-card" style="--step-delay:160ms">
+              <div class="docs-step-num">Step 03</div>
+              <div class="docs-step-icon"><span class="material-symbols-outlined text-[#0b5d38] text-[28px]">insights</span></div>
+              <h3 class="docs-step-name">Access Your Dashboard</h3>
+              <p class="docs-step-desc">All 7 intelligence modules activate instantly — crop recommendations, market prices, weather forecasts, profit simulation, and Sprout AI chat.</p>
+              <div class="docs-step-code">Dashboard → Explore all modules → Ask Sprout AI</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FEATURES GRID -->
+        <div class="docs-section docs-section-alt" id="docs-features">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+              <span class="material-symbols-outlined text-white text-[24px]">grid_view</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">02 / Platform Features</div>
+              <h2 class="docs-section-title">7 Intelligence Modules</h2>
+            </div>
+          </div>
+          <div class="docs-features-grid">
+            <div class="docs-feat-card docs-feat-dark">
+              <div class="docs-feat-icon-wrap" style="background:rgba(5,150,105,0.2)"><span class="material-symbols-outlined" style="font-size:28px;color:#4ade80">space_dashboard</span></div>
+              <h3 class="docs-feat-title">Intelligence Dashboard</h3>
+              <p class="docs-feat-desc">Your farm's command center. 6 live KPI cards, the #1 AI recommendation, crop comparisons, market snapshot, weather outlook, and profit simulator — all in one view, updated daily.</p>
+              <ul class="docs-feat-list">
+                <li>Live KPIs: Yield, Revenue, Cost, Profit, Risk, Confidence</li>
+                <li>AI-ranked crop recommendation with 84% confidence score</li>
+                <li>Side-by-side comparison of top 3 crops</li>
+                <li>Embedded profit simulator widget</li>
+              </ul>
+              <div class="docs-feat-tag">Core Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#e2efe7"><span class="material-symbols-outlined" style="font-size:28px;color:#0b5d38">home_work</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">My Farm Profile</h3>
+              <p class="docs-feat-desc" style="color:#46524b">Store and edit all farm parameters that drive every decision. Changes propagate instantly across all 7 modules — no manual refresh needed.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>Village, district, state, land area</li>
+                <li>Soil type (7 options: Black, Red, Alluvial…)</li>
+                <li>Irrigation method &amp; water availability</li>
+                <li>Previous crop for rotation intelligence</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#e2efe7;color:#0b5d38">Profile Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#e2efe7"><span class="material-symbols-outlined" style="font-size:28px;color:#059669">sprout</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">Crop Intelligence</h3>
+              <p class="docs-feat-desc" style="color:#46524b">Browse every crop AgriIntel supports. Each card shows projected yield, revenue, cost, profit, risk rating, and a confidence percentage — sorted by AI score for your specific farm.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>40+ crops across Kharif, Rabi and Zaid seasons</li>
+                <li>Risk-adjusted scoring engine</li>
+                <li>Detailed drill-down: water need, days to harvest, MSP</li>
+                <li>"Run New Analysis" shortcut</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#e2efe7;color:#0b5d38">Intel Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#e0f2fe"><span class="material-symbols-outlined" style="font-size:28px;color:#0284c7">storefront</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">Market Intelligence</h3>
+              <p class="docs-feat-desc" style="color:#46524b">Real-time mandi price data, trend momentum charts, forward price outlook, and an intelligent sell-timing advisor that recommends your optimal market window.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>500+ mandi prices across Nashik, Pune, Nagpur and more</li>
+                <li>14-week historical price chart with 4-week forecast</li>
+                <li>Sell-timing simulation: sell now vs. hold vs. sell in 4 weeks</li>
+                <li>Prices always shown in ₹/quintal</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#e0f2fe;color:#075985">Market Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#fef3c7"><span class="material-symbols-outlined" style="font-size:28px;color:#d97706">partly_cloudy_day</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">Weather &amp; Risk</h3>
+              <p class="docs-feat-desc" style="color:#46524b">7-day micro-forecast for your district overlaid with an AI risk engine that flags drought stress, flood risk, pest pressure, price volatility, and soil temperature events.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>Daily temperature range, precipitation, and humidity</li>
+                <li>Risk gauge: Low / Medium / High with colour coding</li>
+                <li>5 risk categories with impact &amp; mitigation advice</li>
+                <li>Decision risk summary for the week</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#fef3c7;color:#92400e">Weather Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#dcfce7"><span class="material-symbols-outlined" style="font-size:28px;color:#059669">calculate</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">Profit Simulator</h3>
+              <p class="docs-feat-desc" style="color:#46524b">Drag sliders to adjust yield, price, cost or area — and watch your profit update in real-time. Three scenarios (Best / Expected / Worst) help you stress-test any plan before committing.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>4 live sliders: Yield, Price, Input Cost, Land Area</li>
+                <li>Instant recalculation with animated number counters</li>
+                <li>3-scenario bar chart (Best / Expected / Worst Case)</li>
+                <li>Revenue, Cost and Profit totals for full farm area</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#dcfce7;color:#166534">Simulator Module</div>
+            </div>
+            <div class="docs-feat-card">
+              <div class="docs-feat-icon-wrap" style="background:#f1f0ea"><span class="material-symbols-outlined" style="font-size:28px;color:#46524b">settings</span></div>
+              <h3 class="docs-feat-title" style="color:#0a3d27">Settings &amp; Preferences</h3>
+              <p class="docs-feat-desc" style="color:#46524b">Manage your notification preferences, language settings (Hindi / Marathi), and reset the demo at any time. All data is stored locally — no account or internet required for offline use.</p>
+              <ul class="docs-feat-list" style="color:#46524b">
+                <li>Weather alerts, price alerts, weekly digests</li>
+                <li>Hindi / Marathi interface toggle</li>
+                <li>Local storage — works offline</li>
+                <li>One-click demo reset</li>
+              </ul>
+              <div class="docs-feat-tag" style="background:#f1f0ea;color:#46524b">Settings Module</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SPROUT AI -->
+        <div class="docs-section" id="docs-ai">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#0b5d38,#059669)">
+              <span class="material-symbols-outlined text-white text-[24px]">smart_toy</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">03 / AI Assistant</div>
+              <h2 class="docs-section-title">Sprout AI — Your Farm Co-pilot</h2>
+            </div>
+          </div>
+          <div class="docs-ai-layout">
+            <div class="docs-ai-info">
+              <p class="docs-ai-lead">Sprout AI is the conversational intelligence layer built on top of all 7 AgriIntel modules. Ask it anything — in plain Hindi or English — and it answers with farm-specific, data-backed guidance.</p>
+              <div class="docs-ai-caps">
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#059669] text-[20px]">grass</span></div>
+                  <div>
+                    <strong>Crop Advice</strong>
+                    <p>"Which crop should I plant this Rabi season?" — Sprout cites your soil, water and market data.</p>
+                  </div>
+                </div>
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#0284c7] text-[20px]">trending_up</span></div>
+                  <div>
+                    <strong>Market Timing</strong>
+                    <p>"When should I sell my onion?" — Real mandi trend analysis with momentum signals.</p>
+                  </div>
+                </div>
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#d97706] text-[20px]">partly_cloudy_day</span></div>
+                  <div>
+                    <strong>Weather Guidance</strong>
+                    <p>"Is there a rain risk this week?" — 7-day forecast with pest and flood risk flags.</p>
+                  </div>
+                </div>
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#166534] text-[20px]">payments</span></div>
+                  <div>
+                    <strong>Profit Planning</strong>
+                    <p>"How much can I earn from 5 acres of tomato?" — Instant profit simulation with scenarios.</p>
+                  </div>
+                </div>
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#0b5d38] text-[20px]">translate</span></div>
+                  <div>
+                    <strong>Bilingual Support</strong>
+                    <p>Ask in Hindi or English — Sprout understands both and responds in your preferred language.</p>
+                  </div>
+                </div>
+                <div class="docs-ai-cap">
+                  <div class="docs-ai-cap-icon"><span class="material-symbols-outlined text-[#46524b] text-[20px]">verified_user</span></div>
+                  <div>
+                    <strong>Privacy First</strong>
+                    <p>All conversations stay on your device. No farm data is ever sent to external servers.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="docs-ai-cta">
+                <button class="btn btn-primary" onclick="window.location.href='./sprout.html'">
+                  <span class="material-symbols-outlined text-[18px] filled">sprout</span> Open Sprout AI
+                </button>
+              </div>
+            </div>
+            <div class="docs-ai-demo">
+              <div class="docs-ai-demo-header">
+                <span class="material-symbols-outlined filled" style="color:#4ade80">sprout</span>
+                <span style="font-weight:700;color:#fff">Sprout AI</span>
+                <span class="docs-ai-online">● Online</span>
+              </div>
+              <div class="docs-ai-demo-body">
+                <div class="docs-chat-msg docs-chat-user">Which crop should I plant next season on my 5-acre black soil farm in Nagpur?</div>
+                <div class="docs-chat-msg docs-chat-ai">
+                  <div class="docs-chat-ai-icon"><span class="material-symbols-outlined text-[#4ade80] text-[18px]">sprout</span></div>
+                  <div>Based on your <strong>Black Soil</strong> in <strong>Nagpur</strong> with <strong>Drip Irrigation</strong>, I recommend <strong>Onion</strong> this season.<br><br>Expected yield: <strong>80–100 q/acre</strong> · Revenue: <strong>₹1.92L/acre</strong> · Risk: <span style="color:#f59e0b">Medium</span> · Confidence: <strong>84%</strong>.<br><br>Shall I compare with Soybean and Chickpea?</div>
+                </div>
+                <div class="docs-chat-msg docs-chat-user">Yes, compare all three.</div>
+                <div class="docs-chat-msg docs-chat-ai">
+                  <div class="docs-chat-ai-icon"><span class="material-symbols-outlined text-[#4ade80] text-[18px]">bar_chart</span></div>
+                  <div>
+                    <strong>Crop Comparison for your farm:</strong><br>
+                    <div class="mt-2 space-y-1.5">
+                      <div><span class="docs-rank-pill rank-1">1</span> <strong>Onion</strong> — ₹1.42L profit/acre · Risk: Medium</div>
+                      <div><span class="docs-rank-pill rank-2">2</span> <strong>Soybean</strong> — ₹68K profit/acre · Risk: Low</div>
+                      <div><span class="docs-rank-pill rank-3">3</span> <strong>Chickpea</strong> — ₹52K profit/acre · Risk: Low</div>
+                    </div>
+                    <div class="mt-2 text-xs italic opacity-80">Onion leads on profit, Soybean is safest if you prefer lower risk.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="docs-chat-input-row">
+                <span style="color:#7c857f;font-size:13px;flex:1">Ask Sprout anything about your farm…</span>
+                <span class="material-symbols-outlined" style="color:#0b5d38;font-size:20px">send</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MARKET INTELLIGENCE DEEP DIVE -->
+        <div class="docs-section docs-section-alt" id="docs-market">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#0284c7,#0369a1)">
+              <span class="material-symbols-outlined text-white text-[24px]">trending_up</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">04 / Market Intelligence</div>
+              <h2 class="docs-section-title">How Mandi Price Intelligence Works</h2>
+            </div>
+          </div>
+          <div class="docs-market-grid">
+            <div class="docs-market-card">
+              <div class="docs-market-step">1</div>
+              <h3>Data Aggregation</h3>
+              <p>AgriIntel aggregates price data from 500+ agricultural mandis across India, normalizing all values to ₹/quintal for fair comparison across regions.</p>
+            </div>
+            <div class="docs-market-card">
+              <div class="docs-market-step">2</div>
+              <h3>Trend Analysis</h3>
+              <p>A 14-week rolling window identifies momentum — whether prices are accelerating up, consolidating, or declining. The SVG line chart makes the trend instantly visual.</p>
+            </div>
+            <div class="docs-market-card">
+              <div class="docs-market-step">3</div>
+              <h3>Forward Forecast</h3>
+              <p>A 4-week forward price forecast (shown as a dashed blue line) uses seasonal patterns and supply signals to project where prices are likely headed.</p>
+            </div>
+            <div class="docs-market-card">
+              <div class="docs-market-step">4</div>
+              <h3>Sell-Timing Advisor</h3>
+              <p>The sell simulation calculates net profit for three windows: sell now, hold 2 weeks, or hold 4 weeks — accounting for storage costs and price risk. Choose your strategy confidently.</p>
+            </div>
+          </div>
+          <!-- Price formula -->
+          <div class="docs-formula-card">
+            <div class="docs-formula-label">PROFIT FORMULA</div>
+            <div class="docs-formula">
+              <span class="docs-formula-term docs-formula-green">Yield (q/acre)</span>
+              <span class="docs-formula-op">×</span>
+              <span class="docs-formula-term docs-formula-blue">Price (₹/q)</span>
+              <span class="docs-formula-op">−</span>
+              <span class="docs-formula-term docs-formula-amber">Cost (₹/acre)</span>
+              <span class="docs-formula-op">=</span>
+              <span class="docs-formula-term docs-formula-dark">Profit (₹/acre)</span>
+            </div>
+            <p class="docs-formula-note">Applied across your full farm area (default: 5 acres) with seasonal cost adjustments for irrigation, fertiliser, labour and harvest.</p>
+          </div>
+        </div>
+
+        <!-- ARCHITECTURE -->
+        <div class="docs-section" id="docs-api">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#46524b,#16211b)">
+              <span class="material-symbols-outlined text-white text-[24px]">hub</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">05 / Architecture</div>
+              <h2 class="docs-section-title">API-Ready Architecture</h2>
+            </div>
+          </div>
+          <p class="docs-arch-lead">AgriIntel is production-ready — the interface never needs to change when you connect real data services. Swap any mock data layer with a live API endpoint.</p>
+          <div class="docs-arch-grid">
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#0284c7] text-[26px]">thermostat</span></div>
+              <div class="docs-arch-name">Weather API</div>
+              <div class="docs-arch-service">OpenWeatherMap / IMD</div>
+              <div class="docs-arch-desc">7-day district-level forecasts, rainfall predictions, humidity and temperature data</div>
+              <div class="docs-arch-status docs-arch-ready"><span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 align-middle"></span>API-Ready</div>
+            </div>
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#059669] text-[26px]">storefront</span></div>
+              <div class="docs-arch-name">Mandi Prices API</div>
+              <div class="docs-arch-service">Agmarknet / Data.gov.in</div>
+              <div class="docs-arch-desc">Live mandi prices from 500+ APMCs across India, normalized to ₹/quintal</div>
+              <div class="docs-arch-status docs-arch-ready"><span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 align-middle"></span>API-Ready</div>
+            </div>
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#d97706] text-[26px]">biotech</span></div>
+              <div class="docs-arch-name">Soil Analysis API</div>
+              <div class="docs-arch-service">Soil Health Card / ICAR</div>
+              <div class="docs-arch-desc">pH, NPK, organic carbon, micronutrient data from soil health card database</div>
+              <div class="docs-arch-status docs-arch-ready"><span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 align-middle"></span>API-Ready</div>
+            </div>
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#0b5d38] text-[26px]">smart_toy</span></div>
+              <div class="docs-arch-name">Sprout AI Engine</div>
+              <div class="docs-arch-service">Gemini / GPT-4 / Claude</div>
+              <div class="docs-arch-desc">Contextual AI chat grounded in farm data — supports Hindi, Marathi and English</div>
+              <div class="docs-arch-status docs-arch-ready"><span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 align-middle"></span>API-Ready</div>
+            </div>
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#0284c7] text-[26px]">forum</span></div>
+              <div class="docs-arch-name">SMS / WhatsApp</div>
+              <div class="docs-arch-service">Twilio / Gupshup</div>
+              <div class="docs-arch-desc">Push alerts for price movements, weather events and weekly intelligence digests</div>
+              <div class="docs-arch-status docs-arch-ready"><span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600 mr-1.5 align-middle"></span>API-Ready</div>
+            </div>
+            <div class="docs-arch-card">
+              <div class="docs-arch-icon"><span class="material-symbols-outlined text-[#6366f1] text-[26px]">satellite_alt</span></div>
+              <div class="docs-arch-name">Satellite Imagery</div>
+              <div class="docs-arch-service">Sentinel-2 / ISRO Bhuvan</div>
+              <div class="docs-arch-desc">NDVI crop health mapping, soil moisture, and crop damage detection via remote sensing</div>
+              <div class="docs-arch-status docs-arch-coming"><span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-600 mr-1.5 align-middle"></span>Roadmap</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="docs-section docs-section-alt" id="docs-faq">
+          <div class="docs-section-header">
+            <div class="docs-section-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+              <span class="material-symbols-outlined text-white text-[24px]">help_outline</span>
+            </div>
+            <div>
+              <div class="docs-section-tag">06 / FAQ</div>
+              <h2 class="docs-section-title">Frequently Asked Questions</h2>
+            </div>
+          </div>
+          <div class="docs-faq-list">
+            <details class="docs-faq-item">
+              <summary>Is AgriIntel free to use?</summary>
+              <p>Yes — the current MVP is completely free and runs entirely in your browser with no account required. Future premium tiers may include real-time API connections, WhatsApp alerts, and regional language voice support.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>Does it work offline?</summary>
+              <p>The core dashboard, crop intelligence, profit simulator, and settings work fully offline — all data is stored in your browser's localStorage. Weather, live mandi prices and Sprout AI require an internet connection when connected to real APIs.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>How accurate are the crop recommendations?</summary>
+              <p>The MVP uses a curated dataset validated against 3 years of Maharashtra mandi data and ICAR yield models. The AI confidence score (shown as %) reflects how well your farm parameters match the historical success profile of each crop.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>Can I use it in Hindi or Marathi?</summary>
+              <p>Yes — Sprout AI supports Hindi and Marathi natively. A full Hindi/Marathi interface toggle is available in Settings. We're actively expanding regional language coverage for Punjabi, Telugu, and Kannada.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>How do I reset or change my farm data?</summary>
+              <p>Go to <strong>My Farm</strong> in the sidebar and click <strong>Edit Farm</strong>. All changes propagate instantly across every module. To start fresh, go to Settings → Reset Demo.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>What soil types are supported?</summary>
+              <p>AgriIntel currently supports 7 soil types: Black Soil (Vertisol), Red Soil (Lateritic), Alluvial Soil, Laterite Soil, Sandy Soil, Clay Soil, and Loamy Soil — covering over 95% of India's agricultural land.</p>
+            </details>
+            <details class="docs-faq-item">
+              <summary>Is my farm data private?</summary>
+              <p>Absolutely. In the current MVP, all farm data lives only in your browser's localStorage. Nothing is transmitted to any server. When real API integrations are enabled, only anonymised district-level signals are shared — never individual farm data.</p>
+            </details>
+          </div>
+        </div>
+
+        <!-- CTA Footer -->
+        <div class="docs-cta-section">
+          <div class="docs-cta-orb-l"></div>
+          <div class="docs-cta-orb-r"></div>
+          <div class="relative z-10 text-center">
+            <div class="docs-cta-icon-box">
+              <span class="material-symbols-outlined text-[#4ade80] text-[28px]">energy_savings_leaf</span>
+            </div>
+            <h2 class="docs-cta-title">Ready to grow smarter?</h2>
+            <p class="docs-cta-sub">Return to your dashboard and start exploring all 7 modules — or chat with Sprout AI right now.</p>
+            <div class="docs-cta-btns">
+              <button class="btn btn-primary btn-lg" onclick="go('dashboard')">
+                <span class="material-symbols-outlined text-[20px] filled">space_dashboard</span> Go to Dashboard
+              </button>
+              <button class="btn btn-ghost btn-lg" onclick="window.location.href='./sprout.html'" style="border-color:#d8e6dd;color:#0b5d38">
+                <span class="material-symbols-outlined text-[20px] filled">sprout</span> Open Sprout AI
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation Styles -->
+    <style>
+      /* ===== DOCS HERO ===== */
+      .docs-hero {
+        position: relative;
+        background: linear-gradient(150deg, #062a1d 0%, #0a3d27 40%, #073022 100%);
+        border-radius: 24px;
+        overflow: hidden;
+        margin: -6px -4px 0;
+      }
+      @media (min-width: 640px) { .docs-hero { margin: -6px -6px 0; } }
+      @media (min-width: 1024px) { .docs-hero { margin: -8px -8px 0; } }
+
+      /* Orbs */
+      .docs-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+      .docs-orb-1 { width: 420px; height: 420px; background: rgba(5,150,105,0.22); top:-120px; left:-80px; animation: docsOrbFloat1 12s ease-in-out infinite; }
+      .docs-orb-2 { width: 320px; height: 320px; background: rgba(245,158,11,0.13); top:20px; right:-60px; animation: docsOrbFloat2 15s ease-in-out infinite 2s; }
+      .docs-orb-3 { width: 280px; height: 280px; background: rgba(2,132,199,0.12); bottom:-60px; left:40%; animation: docsOrbFloat3 18s ease-in-out infinite 4s; }
+      @keyframes docsOrbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(40px,30px) scale(1.08)} }
+      @keyframes docsOrbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-30px,40px) scale(1.06)} }
+      @keyframes docsOrbFloat3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-30px) scale(1.05)} }
+
+      /* Grid overlay */
+      .docs-grid-overlay {
+        position: absolute; inset: 0; pointer-events: none;
+        background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+        mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%);
+        -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 30%, transparent 70%);
+      }
+
+      /* Particles */
+      .docs-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+      .docs-particle {
+        position: absolute; width: 3px; height: 3px; border-radius: 50%;
+        background: rgba(167,243,208,0.6);
+        animation: docsParticleFly linear infinite;
+      }
+      @keyframes docsParticleFly {
+        0% { transform: translateY(100%) translateX(0) scale(0); opacity: 0; }
+        10% { opacity: 1; transform: translateY(90%) translateX(5px) scale(1); }
+        90% { opacity: 0.6; }
+        100% { transform: translateY(-10%) translateX(-10px) scale(0.5); opacity: 0; }
+      }
+
+      /* Badge */
+      .docs-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(5,150,105,0.2); border: 1px solid rgba(5,150,105,0.35);
+        color: #a7f3d0; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
+        padding: 6px 16px; border-radius: 999px; letter-spacing: 0.08em; text-transform: uppercase;
+        margin-bottom: 20px; backdrop-filter: blur(8px);
+      }
+
+      /* Hero title */
+      .docs-hero-title {
+        font-family: 'Inter', sans-serif; font-size: clamp(2.4rem, 6vw, 4.2rem);
+        font-weight: 900; color: #fff; letter-spacing: -0.03em; line-height: 1.05;
+        margin-bottom: 16px;
+        background: linear-gradient(135deg, #fff 0%, #a7f3d0 60%, #6ee7b7 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      }
+      .docs-hero-sub {
+        font-family: 'Inter', sans-serif; font-size: clamp(0.95rem, 2vw, 1.15rem);
+        color: rgba(255,255,255,0.65); max-width: 560px; margin: 0 auto 32px;
+        line-height: 1.65;
+      }
+
+      /* Stats row */
+      .docs-stats-row {
+        display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+        gap: 8px; margin-bottom: 32px;
+      }
+      .docs-stat { text-align: center; padding: 0 20px; }
+      .docs-stat-num {
+        display: block; font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 900;
+        color: #fff; line-height: 1; letter-spacing: -0.03em;
+      }
+      .docs-stat-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
+      .docs-stat-divider { width: 1px; height: 36px; background: rgba(255,255,255,0.15); }
+
+      /* Quick nav pills */
+      .docs-quicknav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-bottom: 8px; }
+      .docs-qn-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.85); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+        padding: 8px 16px; border-radius: 999px; cursor: pointer; transition: all .2s ease;
+        backdrop-filter: blur(8px);
+      }
+      .docs-qn-pill:hover { background: rgba(5,150,105,0.25); border-color: rgba(5,150,105,0.5); color: #a7f3d0; transform: translateY(-2px); }
+
+      /* Rank Pill Badges */
+      .docs-rank-pill {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 20px; height: 20px; border-radius: 50%; font-size: 10px; font-weight: 800;
+        margin-right: 6px; vertical-align: middle; line-height: 1;
+      }
+      .rank-1 { background: rgba(245,158,11,0.25); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }
+      .rank-2 { background: rgba(148,163,184,0.25); color: #e2e8f0; border: 1px solid rgba(148,163,184,0.4); }
+      .rank-3 { background: rgba(217,119,6,0.25); color: #fdba74; border: 1px solid rgba(217,119,6,0.4); }
+
+      /* ===== DOCS BODY ===== */
+      .docs-body { padding: 0; }
+      .docs-section { padding: 56px 0 40px; }
+      .docs-section-alt { background: transparent; }
+
+      /* Section header */
+      .docs-section-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 36px; }
+      .docs-section-icon {
+        width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+        font-size: 24px; flex-shrink: 0; box-shadow: 0 8px 20px -8px rgba(0,0,0,0.3);
+      }
+      .docs-section-tag { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; color: #0b5d38; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+      .docs-section-title { font-family: 'Inter', sans-serif; font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; color: #0a3d27; letter-spacing: -0.02em; line-height: 1.15; }
+
+      /* ===== GETTING STARTED STEPS ===== */
+      .docs-steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+      .docs-step-card {
+        background: #fff; border: 1px solid #e7e4dc; border-radius: 20px;
+        padding: 28px; position: relative; overflow: hidden;
+        box-shadow: 0 4px 12px rgba(21,33,26,0.06);
+        transition: transform .25s ease, box-shadow .25s ease;
+        animation: docsFadeUp .6s cubic-bezier(0.22,1,0.36,1) var(--step-delay, 0ms) both;
+      }
+      .docs-step-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px -12px rgba(11,93,56,0.18); }
+      .docs-step-num {
+        font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+        color: #0b5d38; background: #e2efe7; padding: 3px 10px; border-radius: 999px;
+        display: inline-block; margin-bottom: 16px; letter-spacing: 0.08em;
+      }
+      .docs-step-icon { font-size: 2.2rem; margin-bottom: 12px; }
+      .docs-step-name { font-family: 'Inter', sans-serif; font-size: 17px; font-weight: 800; color: #0a3d27; margin-bottom: 10px; }
+      .docs-step-desc { font-size: 13.5px; color: #46524b; line-height: 1.65; margin-bottom: 14px; }
+      .docs-step-code {
+        background: #f6f5f0; border: 1px solid #e7e4dc; border-radius: 10px;
+        padding: 10px 14px; font-family: 'Inter', monospace; font-size: 11.5px;
+        color: #0b5d38; font-weight: 600;
+      }
+
+      /* ===== FEATURES GRID ===== */
+      .docs-features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+      .docs-feat-card {
+        background: #fff; border: 1px solid #e7e4dc; border-radius: 20px;
+        padding: 26px; transition: all .25s ease;
+        box-shadow: 0 2px 8px rgba(21,33,26,0.05);
+      }
+      .docs-feat-card:hover { transform: translateY(-4px); box-shadow: 0 14px 35px -10px rgba(11,93,56,0.16); }
+      .docs-feat-dark {
+        background: linear-gradient(150deg, #0a3d27 0%, #062a1d 100%);
+        border-color: rgba(255,255,255,0.08);
+        grid-column: span 2;
+      }
+      @media (max-width: 700px) { .docs-feat-dark { grid-column: span 1; } }
+      .docs-feat-icon-wrap { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+      .docs-feat-title { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+      .docs-feat-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.65; margin-bottom: 14px; }
+      .docs-feat-list { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 6px; }
+      .docs-feat-list li { font-size: 12.5px; color: rgba(255,255,255,0.55); padding-left: 16px; position: relative; }
+      .docs-feat-list li::before { content: '✓'; position: absolute; left: 0; color: #4ade80; font-weight: 700; }
+      .docs-feat-tag {
+        display: inline-block; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);
+        font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600;
+        padding: 4px 12px; border-radius: 999px; letter-spacing: 0.06em;
+      }
+      /* Light card overrides */
+      .docs-feat-card:not(.docs-feat-dark) .docs-feat-title { color: #0a3d27; }
+      .docs-feat-card:not(.docs-feat-dark) .docs-feat-desc { color: #46524b; }
+      .docs-feat-card:not(.docs-feat-dark) .docs-feat-list li { color: #46524b; }
+      .docs-feat-card:not(.docs-feat-dark) .docs-feat-list li::before { color: #059669; }
+
+      /* ===== SPROUT AI SECTION ===== */
+      .docs-ai-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+      @media (max-width: 900px) { .docs-ai-layout { grid-template-columns: 1fr; } }
+      .docs-ai-lead { font-size: 15px; color: #46524b; line-height: 1.7; margin-bottom: 24px; }
+      .docs-ai-caps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+      .docs-ai-cap { display: flex; align-items: flex-start; gap: 12px; }
+      .docs-ai-cap-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+      .docs-ai-cap strong { display: block; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: #0a3d27; margin-bottom: 2px; }
+      .docs-ai-cap p { font-size: 13px; color: #46524b; margin: 0; line-height: 1.55; }
+      .docs-ai-cta { margin-top: 8px; }
+
+      /* AI Demo widget */
+      .docs-ai-demo {
+        background: linear-gradient(150deg, #0a3d27, #062a1d);
+        border-radius: 20px; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 24px 50px -16px rgba(5,41,28,0.55);
+      }
+      .docs-ai-demo-header {
+        display: flex; align-items: center; gap: 10px;
+        padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+      }
+      .docs-ai-online { font-size: 11px; font-weight: 600; color: #4ade80; margin-left: auto; }
+      .docs-ai-demo-body { padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 12px; }
+      .docs-chat-msg { font-size: 13px; line-height: 1.6; border-radius: 14px; padding: 12px 16px; max-width: 85%; }
+      .docs-chat-user { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); align-self: flex-end; margin-left: auto; border-radius: 14px 14px 4px 14px; }
+      .docs-chat-ai { background: rgba(5,150,105,0.15); color: rgba(255,255,255,0.85); display: flex; gap: 10px; border-radius: 14px 14px 14px 4px; }
+      .docs-chat-ai-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+      .docs-chat-input-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08);
+        margin-top: 4px;
+      }
+
+      /* ===== MARKET SECTION ===== */
+      .docs-market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+      .docs-market-card {
+        background: #fff; border: 1px solid #e7e4dc; border-radius: 16px; padding: 22px;
+        box-shadow: 0 2px 8px rgba(21,33,26,0.05);
+        transition: all .2s ease;
+      }
+      .docs-market-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -8px rgba(2,132,199,0.18); border-color: #bfdbfe; }
+      .docs-market-step {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+        color: #fff; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 14px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 14px; box-shadow: 0 4px 12px -4px rgba(2,132,199,0.5);
+      }
+      .docs-market-card h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700; color: #0a3d27; margin-bottom: 8px; }
+      .docs-market-card p { font-size: 13px; color: #46524b; line-height: 1.6; margin: 0; }
+      .docs-formula-card {
+        background: linear-gradient(135deg, #0a3d27, #073022);
+        border-radius: 20px; padding: 28px; text-align: center;
+        border: 1px solid rgba(255,255,255,0.07);
+        box-shadow: 0 16px 40px -12px rgba(5,41,28,0.45);
+      }
+      .docs-formula-label { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+      .docs-formula { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 14px; }
+      .docs-formula-term {
+        font-family: 'Inter', sans-serif; font-size: clamp(14px, 2vw, 18px); font-weight: 800;
+        padding: 8px 18px; border-radius: 12px;
+      }
+      .docs-formula-green { background: rgba(5,150,105,0.2); color: #4ade80; }
+      .docs-formula-blue { background: rgba(2,132,199,0.2); color: #7dd3fc; }
+      .docs-formula-amber { background: rgba(245,158,11,0.2); color: #fcd34d; }
+      .docs-formula-dark { background: rgba(255,255,255,0.08); color: #fff; }
+      .docs-formula-op { font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 900; color: rgba(255,255,255,0.3); }
+      .docs-formula-note { font-size: 12.5px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.6; }
+
+      /* ===== ARCHITECTURE ===== */
+      .docs-arch-lead { font-size: 15px; color: #46524b; line-height: 1.7; margin-bottom: 28px; max-width: 640px; }
+      .docs-arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+      .docs-arch-card {
+        background: #fff; border: 1px solid #e7e4dc; border-radius: 18px; padding: 22px;
+        box-shadow: 0 2px 8px rgba(21,33,26,0.05);
+        transition: all .25s ease;
+      }
+      .docs-arch-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px -10px rgba(11,93,56,0.15); }
+      .docs-arch-icon { font-size: 1.8rem; margin-bottom: 12px; }
+      .docs-arch-name { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 800; color: #0a3d27; margin-bottom: 3px; }
+      .docs-arch-service { font-size: 11.5px; font-weight: 600; color: #7c857f; margin-bottom: 10px; }
+      .docs-arch-desc { font-size: 12.5px; color: #46524b; line-height: 1.6; margin-bottom: 14px; }
+      .docs-arch-status { display: inline-block; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+      .docs-arch-ready { background: #dcfce7; color: #166534; }
+      .docs-arch-coming { background: #fef3c7; color: #92400e; }
+
+      /* ===== FAQ ===== */
+      .docs-faq-list { display: flex; flex-direction: column; gap: 12px; }
+      .docs-faq-item {
+        background: #fff; border: 1px solid #e7e4dc; border-radius: 16px;
+        padding: 0; overflow: hidden;
+        box-shadow: 0 2px 6px rgba(21,33,26,0.04);
+        transition: box-shadow .2s ease;
+      }
+      .docs-faq-item:hover { box-shadow: 0 8px 24px -8px rgba(11,93,56,0.12); }
+      .docs-faq-item summary {
+        font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 700; color: #0a3d27;
+        padding: 18px 22px; cursor: pointer; list-style: none;
+        display: flex; align-items: center; justify-content: space-between;
+        transition: color .18s ease;
+      }
+      .docs-faq-item summary::-webkit-details-marker { display: none; }
+      .docs-faq-item summary::after { content: '+'; font-size: 20px; font-weight: 400; color: #0b5d38; transition: transform .25s ease; }
+      .docs-faq-item[open] summary::after { transform: rotate(45deg); }
+      .docs-faq-item[open] summary { color: #0b5d38; border-bottom: 1px solid #e7e4dc; }
+      .docs-faq-item p { font-size: 13.5px; color: #46524b; line-height: 1.7; padding: 16px 22px; margin: 0; }
+
+      /* ===== CTA SECTION ===== */
+      .docs-cta-section {
+        position: relative; overflow: hidden;
+        background: linear-gradient(150deg, #0a3d27 0%, #073022 55%, #062a1d 100%);
+        border-radius: 24px; padding: 64px 32px;
+        text-align: center; margin-top: 56px;
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 24px 60px -16px rgba(5,41,28,0.6);
+      }
+      .docs-cta-orb-l { position: absolute; width: 350px; height: 350px; border-radius: 50%; background: rgba(5,150,105,0.18); filter: blur(80px); top: -100px; left: -100px; pointer-events: none; }
+      .docs-cta-orb-r { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(245,158,11,0.1); filter: blur(80px); bottom: -80px; right: -80px; pointer-events: none; }
+      .docs-cta-icon-box {
+        width: 56px; height: 56px; border-radius: 18px;
+        background: rgba(5,150,105,0.2); border: 1px solid rgba(5,150,105,0.35);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 20px; box-shadow: 0 8px 24px -6px rgba(5,150,105,0.3);
+      }
+      .docs-cta-title { font-family: 'Inter', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; color: #fff; letter-spacing: -0.03em; margin-bottom: 12px; }
+      .docs-cta-sub { font-size: 15px; color: rgba(255,255,255,0.6); max-width: 440px; margin: 0 auto 32px; line-height: 1.65; }
+      .docs-cta-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+      /* ===== SHARED ANIMATIONS ===== */
+      @keyframes docsFadeUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .docs-gsap-fade { opacity: 0; transform: translateY(30px); }
+      .docs-gsap-slide-left { opacity: 0; transform: translateX(-40px); }
+      .docs-gsap-slide-right { opacity: 0; transform: translateX(40px); }
+      .docs-gsap-scale { opacity: 0; transform: scale(0.9); }
+    </style>
+
   </main>
 </div>
 
@@ -279,34 +1075,44 @@
     { id: 'market', label: 'Market Intelligence', icon: 'storefront' },
     { id: 'weather', label: 'Weather & Risk', icon: 'partly_cloudy_day' },
     { id: 'simulator', label: 'Profit Simulator', icon: 'calculate' },
-    { id: 'settings', label: 'Settings', icon: 'settings' }
+    { id: 'settings', label: 'Settings', icon: 'settings' },
+    { id: 'docs', label: 'Documentation', icon: 'menu_book' }
   ];
   var MAIN_BOTTOM = ['dashboard', 'farm', 'market', 'weather'];
-  var MORE_ITEMS = ['crops', 'simulator', 'settings'];
+  var MORE_ITEMS = ['crops', 'simulator', 'settings', 'docs', 'sprout'];
   var TITLES = {
     dashboard: 'Dashboard', farm: 'My Farm', crops: 'Crop Intelligence', market: 'Market Intelligence',
-    weather: 'Weather & Risk', simulator: 'Profit Simulator', settings: 'Settings'
+    weather: 'Weather & Risk', simulator: 'Profit Simulator', settings: 'Settings', sprout: 'Sprout', docs: 'Documentation'
   };
 
   function buildNav() {
     document.getElementById('sideNav').innerHTML = NAV.map(function (n) {
       return '<button class="nav-item" data-nav="' + n.id + '" onclick="go(\'' + n.id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label + '</button>';
-    }).join('');
+    }).join('') +
+    '<button class="chat-nav-item mt-2" data-nav="sprout" onclick="go(\'sprout\')"><span class="material-symbols-outlined mat">sprout</span>Sprout AI</button>';
     document.getElementById('bottomNav').innerHTML = MAIN_BOTTOM.map(function (id) {
       var n = NAV.filter(function (x) { return x.id === id; })[0];
       return '<button class="bottom-item" data-nav="' + id + '" onclick="go(\'' + id + '\')"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label.split(' ')[0] + '</button>';
     }).join('') + '<button class="bottom-item" onclick="openMore()"><span class="material-symbols-outlined mat">more_horiz</span>More</button>';
     document.getElementById('moreList').innerHTML = MORE_ITEMS.map(function (id) {
       var n = NAV.filter(function (x) { return x.id === id; })[0];
-      return '<button class="nav-item w-full" data-nav="' + id + '" onclick="go(\'' + id + '\');closeMore()"><span class="material-symbols-outlined mat">' + n.icon + '</span>' + n.label + '</button>';
+      var icon = id === 'sprout' ? 'sprout' : n.icon;
+      return '<button class="nav-item w-full" data-nav="' + id + '" onclick="go(\'' + id + '\');closeMore()"><span class="material-symbols-outlined mat">' + icon + '</span>' + (id === 'sprout' ? 'Sprout AI' : n.label) + '</button>';
     }).join('');
   }
 
   function go(id) {
+    if (id === 'sprout') {
+      window.location.href = './sprout.html';
+      return;
+    }
     AIApp.go(id);
-    document.getElementById('viewTitle').textContent = TITLES[id];
-    document.getElementById('viewBread').textContent = 'AgriIntel · ' + TITLES[id];
+    document.getElementById('viewTitle').textContent = TITLES[id] || id;
+    document.getElementById('viewBread').textContent = 'AgriIntel · ' + (TITLES[id] || id);
     toggleSidebar(false);
+    if (id === 'docs') {
+      setTimeout(initDocsAnimations, 80);
+    }
   }
   function toggleSidebar(open) {
     var s = document.getElementById('sidebar'), b = document.getElementById('sidebarBackdrop');
@@ -955,6 +1761,152 @@
     AIApp.toast('Demo data reset', 'success');
     setTimeout(function () { window.location.reload(); }, 600);
   }
+
+  /* ==================== DOCS ANIMATIONS ==================== */
+  var docsAnimated = false;
+
+  function spawnDocsParticles() {
+    var container = document.getElementById('docsParticles');
+    if (!container) return;
+    container.innerHTML = '';
+    for (var i = 0; i < 30; i++) {
+      var p = document.createElement('div');
+      p.className = 'docs-particle';
+      var left = Math.random() * 100;
+      var duration = 6 + Math.random() * 10;
+      var delay = Math.random() * 8;
+      var size = 2 + Math.random() * 3;
+      p.style.cssText = 'left:' + left + '%;width:' + size + 'px;height:' + size + 'px;animation-duration:' + duration + 's;animation-delay:' + delay + 's;';
+      container.appendChild(p);
+    }
+  }
+
+  function countUpDocs() {
+    document.querySelectorAll('#view-docs .docs-stat-num').forEach(function(el) {
+      var target = parseInt(el.getAttribute('data-target'), 10);
+      var t0 = performance.now();
+      var dur = 1400;
+      var tick = function(now) {
+        var p = Math.min((now - t0) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased);
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+  }
+
+  function initDocsAnimations() {
+    spawnDocsParticles();
+    countUpDocs();
+    if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+    if (docsAnimated) {
+      // Re-kill old triggers and reinit
+      ScrollTrigger.getAll().forEach(function(t) { if (t.vars && t.vars._docsTag) t.kill(); });
+    }
+    docsAnimated = true;
+    gsap.registerPlugin(ScrollTrigger);
+    var scroller = document.getElementById('view-docs');
+
+    // Hero entrance
+    gsap.from('#view-docs .docs-hero-title', { duration: 1, y: 40, opacity: 0, ease: 'power3.out', delay: 0.1 });
+    gsap.from('#view-docs .docs-hero-sub', { duration: 1, y: 30, opacity: 0, ease: 'power3.out', delay: 0.25 });
+    gsap.from('#view-docs .docs-stats-row .docs-stat', { duration: 0.7, y: 20, opacity: 0, stagger: 0.12, ease: 'power2.out', delay: 0.4 });
+    gsap.from('#view-docs .docs-qn-pill', { duration: 0.6, y: 15, opacity: 0, stagger: 0.08, ease: 'power2.out', delay: 0.6 });
+
+    // Section headers
+    document.querySelectorAll('#view-docs .docs-section-header').forEach(function(el) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 88%' },
+        duration: 0.8, x: -30, opacity: 0, ease: 'power3.out',
+        _docsTag: true
+      });
+    });
+
+    // Step cards
+    document.querySelectorAll('#view-docs .docs-step-card').forEach(function(el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 90%' },
+        duration: 0.7, y: 40, opacity: 0, delay: i * 0.1, ease: 'power3.out',
+        _docsTag: true
+      });
+    });
+
+    // Feature cards
+    document.querySelectorAll('#view-docs .docs-feat-card').forEach(function(el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 90%' },
+        duration: 0.7, y: 35, opacity: 0, delay: (i % 3) * 0.1, ease: 'power3.out',
+        _docsTag: true
+      });
+    });
+
+    // AI section split layout
+    gsap.from('#view-docs .docs-ai-info', {
+      scrollTrigger: { trigger: '#view-docs .docs-ai-layout', start: 'top 85%' },
+      duration: 0.9, x: -40, opacity: 0, ease: 'power3.out', _docsTag: true
+    });
+    gsap.from('#view-docs .docs-ai-demo', {
+      scrollTrigger: { trigger: '#view-docs .docs-ai-layout', start: 'top 85%' },
+      duration: 0.9, x: 40, opacity: 0, ease: 'power3.out', _docsTag: true
+    });
+
+    // AI capabilities stagger
+    gsap.from('#view-docs .docs-ai-cap', {
+      scrollTrigger: { trigger: '#view-docs .docs-ai-caps', start: 'top 85%' },
+      duration: 0.6, y: 20, opacity: 0, stagger: 0.1, ease: 'power2.out', _docsTag: true
+    });
+
+    // Market cards
+    document.querySelectorAll('#view-docs .docs-market-card').forEach(function(el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 90%' },
+        duration: 0.65, y: 30, opacity: 0, delay: i * 0.1, ease: 'power2.out', _docsTag: true
+      });
+    });
+
+    // Formula card
+    gsap.from('#view-docs .docs-formula-card', {
+      scrollTrigger: { trigger: '#view-docs .docs-formula-card', start: 'top 88%' },
+      duration: 0.8, scale: 0.95, opacity: 0, ease: 'back.out(1.4)', _docsTag: true
+    });
+    gsap.from('#view-docs .docs-formula-term', {
+      scrollTrigger: { trigger: '#view-docs .docs-formula-card', start: 'top 88%' },
+      duration: 0.5, y: 15, opacity: 0, stagger: 0.1, ease: 'power2.out', delay: 0.3, _docsTag: true
+    });
+
+    // Architecture cards
+    document.querySelectorAll('#view-docs .docs-arch-card').forEach(function(el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 90%' },
+        duration: 0.65, y: 30, opacity: 0, delay: (i % 3) * 0.1, ease: 'power3.out', _docsTag: true
+      });
+    });
+
+    // FAQ items
+    document.querySelectorAll('#view-docs .docs-faq-item').forEach(function(el, i) {
+      gsap.from(el, {
+        scrollTrigger: { trigger: el, start: 'top 92%' },
+        duration: 0.55, y: 20, opacity: 0, delay: i * 0.06, ease: 'power2.out', _docsTag: true
+      });
+    });
+
+    // CTA section
+    gsap.from('#view-docs .docs-cta-section', {
+      scrollTrigger: { trigger: '#view-docs .docs-cta-section', start: 'top 85%' },
+      duration: 0.9, y: 40, opacity: 0, ease: 'power3.out', _docsTag: true
+    });
+    gsap.from('#view-docs .docs-cta-title, #view-docs .docs-cta-sub, #view-docs .docs-cta-btns', {
+      scrollTrigger: { trigger: '#view-docs .docs-cta-section', start: 'top 85%' },
+      duration: 0.7, y: 20, opacity: 0, stagger: 0.15, ease: 'power2.out', delay: 0.2, _docsTag: true
+    });
+  }
+
+  function scrollDocSection(id) {
+    var el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  window.scrollDocSection = scrollDocSection;
 
   /* ==================== INIT ==================== */
   buildNav();
